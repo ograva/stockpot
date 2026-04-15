@@ -3,6 +3,10 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "baseUrl": "./"
+    "baseUrl": "./",
+    "paths": {
+      "@stockpot/shared": ["../../projects/shared/src/index.ts"],
+      "@stockpot/shared/*": ["../../projects/shared/src/*"]
+    }
   }
 }

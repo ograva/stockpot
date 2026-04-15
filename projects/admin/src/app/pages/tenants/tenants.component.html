@@ -1,0 +1,88 @@
+<mat-card class="cardWithShadow">
+  <mat-card-header class="p-24 p-b-0">
+    <div class="d-flex justify-content-between align-items-center w-100">
+      <div>
+        <mat-card-title>Tenants</mat-card-title>
+        <mat-card-subtitle>Manage restaurant subscriber accounts</mat-card-subtitle>
+      </div>
+      <button mat-flat-button color="primary" (click)="openAddDialog()"
+        data-test-id="admn-tenant-add-button">
+        <mat-icon>add</mat-icon> Add Tenant
+      </button>
+    </div>
+  </mat-card-header>
+
+  <mat-card-content class="p-24">
+    @if (isLoading()) {
+      <div class="d-flex justify-content-center p-24">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+    } @else {
+      <mat-table [dataSource]="tenants()" data-test-id="admn-tenant-list-table">
+
+        <!-- Name Column -->
+        <ng-container matColumnDef="name">
+          <mat-header-cell *matHeaderCellDef>Restaurant Name</mat-header-cell>
+          <mat-cell *matCellDef="let row" [attr.data-test-id]="'admn-tenant-row-' + row.id">
+            {{ row.name }}
+          </mat-cell>
+        </ng-container>
+
+        <!-- Plan Tier Column -->
+        <ng-container matColumnDef="planTier">
+          <mat-header-cell *matHeaderCellDef>Plan</mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            <mat-chip>{{ row.planTier }}</mat-chip>
+          </mat-cell>
+        </ng-container>
+
+        <!-- Status Column -->
+        <ng-container matColumnDef="status">
+          <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            <mat-chip [color]="row.status === 'active' ? 'primary' : 'warn'" highlighted>
+              {{ row.status }}
+            </mat-chip>
+          </mat-cell>
+        </ng-container>
+
+        <!-- Created At Column -->
+        <ng-container matColumnDef="createdAt">
+          <mat-header-cell *matHeaderCellDef>Created</mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            {{ row.createdAt | date: 'mediumDate' }}
+          </mat-cell>
+        </ng-container>
+
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+          <mat-header-cell *matHeaderCellDef></mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            <button mat-icon-button title="Edit" (click)="openEditDialog(row)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            @if (row.status === 'active') {
+              <button mat-icon-button color="warn" title="Suspend"
+                [attr.data-test-id]="'admn-tenant-suspend-' + row.id"
+                (click)="suspend(row)">
+                <mat-icon>block</mat-icon>
+              </button>
+            } @else {
+              <button mat-icon-button color="primary" title="Reactivate"
+                [attr.data-test-id]="'admn-tenant-reactivate-' + row.id"
+                (click)="reactivate(row)">
+                <mat-icon>check_circle</mat-icon>
+              </button>
+            }
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+      </mat-table>
+
+      <mat-paginator [pageSize]="pageSize" [pageSizeOptions]="[25, 50, 100]"
+        showFirstLastButtons></mat-paginator>
+    }
+  </mat-card-content>
+</mat-card>
