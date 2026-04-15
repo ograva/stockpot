@@ -1,0 +1,84 @@
+<mat-card class="cardWithShadow">
+  <mat-card-header class="p-24 p-b-0">
+    <div class="d-flex justify-content-between align-items-center w-100">
+      <div>
+        <mat-card-title>Master Ingredient Catalog</mat-card-title>
+        <mat-card-subtitle>Platform-level ingredient library</mat-card-subtitle>
+      </div>
+      <div class="d-flex gap-8 align-items-center">
+        <mat-slide-toggle [checked]="showArchived()" (change)="toggleArchived()">
+          Show Archived
+        </mat-slide-toggle>
+        <button mat-flat-button color="primary" (click)="openAddDialog()"
+          data-test-id="admn-ing-add-button">
+          <mat-icon>add</mat-icon> Add Ingredient
+        </button>
+      </div>
+    </div>
+  </mat-card-header>
+
+  <mat-card-content class="p-24">
+    <mat-form-field appearance="outline" class="w-100 m-b-16">
+      <mat-label>Search ingredients</mat-label>
+      <input matInput (input)="onFilter($any($event.target).value)" placeholder="Filter by name..." />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    @if (isLoading()) {
+      <div class="d-flex justify-content-center p-24">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+    } @else {
+      <mat-table [dataSource]="filteredIngredients()" data-test-id="admn-ing-list-table">
+
+        <ng-container matColumnDef="name">
+          <mat-header-cell *matHeaderCellDef>Name</mat-header-cell>
+          <mat-cell *matCellDef="let row" [attr.data-test-id]="'admn-ing-row-' + row.id">
+            {{ row.name }}
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="category">
+          <mat-header-cell *matHeaderCellDef>Category</mat-header-cell>
+          <mat-cell *matCellDef="let row">{{ row.category }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="defaultUnit">
+          <mat-header-cell *matHeaderCellDef>Default UoM</mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            <mat-chip>{{ row.defaultUnit }}</mat-chip>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            <mat-chip [color]="row.isActive ? 'primary' : 'warn'" highlighted>
+              {{ row.isActive ? 'Active' : 'Archived' }}
+            </mat-chip>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <mat-header-cell *matHeaderCellDef></mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            @if (row.isActive) {
+              <button mat-icon-button color="warn" title="Archive" (click)="archive(row)">
+                <mat-icon>archive</mat-icon>
+              </button>
+            }
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell p-24 text-muted" [attr.colspan]="displayedColumns.length">
+            No ingredients found.
+          </td>
+        </tr>
+      </mat-table>
+    }
+  </mat-card-content>
+</mat-card>

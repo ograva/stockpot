@@ -1,0 +1,71 @@
+<div class="row">
+  <!-- Profile Form -->
+  <div class="col-lg-6">
+    <mat-card class="cardWithShadow">
+      <mat-card-header class="p-24 p-b-0">
+        <mat-card-title>Profile Settings</mat-card-title>
+        <mat-card-subtitle>Update your operator display name</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content class="p-24">
+        <form [formGroup]="profileForm" novalidate class="d-flex flex-column gap-16"
+          data-test-id="admn-profile-form">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Display Name</mat-label>
+            <input matInput formControlName="displayName"
+              data-test-id="admn-profile-name-input" />
+            @if (profileForm.controls['displayName'].touched &&
+                 profileForm.controls['displayName'].hasError('required')) {
+              <mat-error>Display name is required</mat-error>
+            }
+          </mat-form-field>
+          <button mat-flat-button color="primary" (click)="saveProfile()"
+            [disabled]="profileForm.invalid || isSavingProfile"
+            data-test-id="admn-profile-save-button">
+            @if (isSavingProfile) {
+              <mat-spinner diameter="18"></mat-spinner>
+            } @else {
+              Save Profile
+            }
+          </button>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Password Change Form -->
+  <div class="col-lg-6">
+    <mat-card class="cardWithShadow">
+      <mat-card-header class="p-24 p-b-0">
+        <mat-card-title>Change Password</mat-card-title>
+        <mat-card-subtitle>Re-authenticate to change your password</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content class="p-24">
+        <form [formGroup]="passwordForm" novalidate class="d-flex flex-column gap-16">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Current Password</mat-label>
+            <input matInput type="password" formControlName="currentPassword"
+              data-test-id="admn-profile-current-password-input" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>New Password</mat-label>
+            <input matInput type="password" formControlName="newPassword"
+              data-test-id="admn-profile-new-password-input" />
+            @if (passwordForm.controls['newPassword'].touched &&
+                 passwordForm.controls['newPassword'].hasError('minlength')) {
+              <mat-error>Password must be at least 8 characters</mat-error>
+            }
+          </mat-form-field>
+          <button mat-flat-button color="primary" (click)="changePassword()"
+            [disabled]="passwordForm.invalid || isChangingPassword"
+            data-test-id="admn-profile-change-password-button">
+            @if (isChangingPassword) {
+              <mat-spinner diameter="18"></mat-spinner>
+            } @else {
+              Change Password
+            }
+          </button>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

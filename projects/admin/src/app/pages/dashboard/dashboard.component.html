@@ -1,0 +1,80 @@
+<div class="row">
+  @if (isLoading()) {
+    <div class="col-12 d-flex justify-content-center p-32">
+      <mat-spinner diameter="48"></mat-spinner>
+    </div>
+  } @else {
+    <!-- KPI Cards Row -->
+    <div class="col-lg-4 col-sm-6">
+      <mat-card class="cardWithShadow" data-test-id="admn-dash-active-card">
+        <mat-card-content class="p-24">
+          <h6 class="text-muted f-s-12 m-b-8">Active Tenants</h6>
+          <h2 class="f-s-32 f-w-700 m-b-0">{{ activeCount() }}</h2>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div class="col-lg-4 col-sm-6">
+      <mat-card class="cardWithShadow" data-test-id="admn-dash-suspended-card">
+        <mat-card-content class="p-24">
+          <h6 class="text-muted f-s-12 m-b-8">Suspended Tenants</h6>
+          <h2 class="f-s-32 f-w-700 m-b-0">{{ suspendedCount() }}</h2>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div class="col-lg-4 col-sm-6">
+      <mat-card class="cardWithShadow" data-test-id="admn-dash-total-card">
+        <mat-card-content class="p-24">
+          <h6 class="text-muted f-s-12 m-b-8">Total Tenants</h6>
+          <h2 class="f-s-32 f-w-700 m-b-0">{{ tenants().length }}</h2>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Tier Distribution Chart -->
+    <div class="col-lg-6">
+      <mat-card class="cardWithShadow">
+        <mat-card-header class="p-24 p-b-0">
+          <mat-card-title>Subscription Tier Distribution</mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="p-24" data-test-id="admn-dash-tier-chart">
+          <apx-chart
+            [series]="chartSeries()"
+            [chart]="chartConfig"
+            [labels]="chartLabels"
+            [dataLabels]="chartDataLabels"
+            [legend]="chartLegend"
+          ></apx-chart>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Recently Added Tenants -->
+    <div class="col-lg-6">
+      <mat-card class="cardWithShadow">
+        <mat-card-header class="p-24 p-b-0">
+          <mat-card-title>Recently Added Tenants</mat-card-title>
+          <mat-card-subtitle>Last 5 onboarded restaurants</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="p-24" data-test-id="admn-dash-recent-tenants">
+          @if (recentTenants().length === 0) {
+            <p class="text-muted">No tenants onboarded yet.</p>
+          } @else {
+            <mat-list>
+              @for (tenant of recentTenants(); track tenant.id) {
+                <mat-list-item class="p-b-8">
+                  <span matListItemTitle>{{ tenant.name }}</span>
+                  <span matListItemMeta>
+                    <mat-chip class="f-s-11">{{ tenant.planTier }}</mat-chip>
+                  </span>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+              }
+            </mat-list>
+          }
+        </mat-card-content>
+      </mat-card>
+    </div>
+  }
+</div>

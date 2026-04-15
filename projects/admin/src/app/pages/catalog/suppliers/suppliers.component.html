@@ -1,0 +1,74 @@
+<mat-card class="cardWithShadow">
+  <mat-card-header class="p-24 p-b-0">
+    <div class="d-flex justify-content-between align-items-center w-100">
+      <div>
+        <mat-card-title>Supplier Network</mat-card-title>
+        <mat-card-subtitle>Platform-verified supplier directory</mat-card-subtitle>
+      </div>
+      <button mat-flat-button color="primary" (click)="openAddDialog()"
+        data-test-id="admn-supplier-add-btn">
+        <mat-icon>add</mat-icon> Add Supplier
+      </button>
+    </div>
+  </mat-card-header>
+
+  <mat-card-content class="p-24">
+    @if (isLoading()) {
+      <div class="d-flex justify-content-center p-24">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+    } @else {
+      <mat-table [dataSource]="vendors()" data-test-id="admn-supplier-list-table">
+
+        <ng-container matColumnDef="name">
+          <mat-header-cell *matHeaderCellDef>Business Name</mat-header-cell>
+          <mat-cell *matCellDef="let row" [attr.data-test-id]="'admn-supplier-row-' + row.id">
+            <a [routerLink]="['/dashboard/catalog/suppliers', row.id]" class="text-primary">
+              {{ row.name }}
+            </a>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="email">
+          <mat-header-cell *matHeaderCellDef>Contact Email</mat-header-cell>
+          <mat-cell *matCellDef="let row">{{ row.email ?? '—' }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            <mat-chip [color]="row.isActive ? 'primary' : 'warn'" highlighted>
+              {{ row.isActive ? 'Active' : 'Inactive' }}
+            </mat-chip>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <mat-header-cell *matHeaderCellDef></mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            <button mat-icon-button title="View Catalog"
+              [routerLink]="['/dashboard/catalog/suppliers', row.id]">
+              <mat-icon>visibility</mat-icon>
+            </button>
+            @if (row.isActive) {
+              <button mat-icon-button color="warn" title="Deactivate"
+                [attr.data-test-id]="'admn-supplier-deactivate-' + row.id"
+                (click)="deactivate(row)">
+                <mat-icon>block</mat-icon>
+              </button>
+            }
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell p-24 text-muted" [attr.colspan]="displayedColumns.length">
+            No suppliers found. Add one above.
+          </td>
+        </tr>
+      </mat-table>
+    }
+  </mat-card-content>
+</mat-card>
