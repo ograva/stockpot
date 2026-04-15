@@ -39,7 +39,7 @@
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | ADMN-001 | Admin App Login | ADMN | High | Completed | S | ADMN-001 | [ADMN-001](../shards/ADMN/ADMN-001-admin-login.md) |
 | ADMN-002 | Tenant (Restaurant) CRUD | ADMN | High | Completed | M | ADMN-002 | [ADMN-002](../shards/ADMN/ADMN-002-tenant-crud.md) |
-| ADMN-003 | Subscription Tier Assignment | ADMN | High | Not Started | S | ADMN-003 | [ADMN-003](../shards/ADMN/ADMN-003-subscription-tier-assignment.md) |
+| ADMN-003 | Subscription Tier Assignment | ADMN | High | Completed | S | ADMN-003 | [ADMN-003](../shards/ADMN/ADMN-003-subscription-tier-assignment.md) |
 | ADMN-004 | Platform Dashboard | ADMN | Medium | Not Started | M | ADMN-004 | [ADMN-004](../shards/ADMN/ADMN-004-platform-dashboard.md) |
 | ADMN-005 | Master UoM Library Management | ADMN | High | Not Started | M | ADMN-005 | [ADMN-005](../shards/ADMN/ADMN-005-master-uom-library.md) |
 | ADMN-006 | Master Ingredient Catalog Management | ADMN | High | Not Started | M | ADMN-006 | [ADMN-006](../shards/ADMN/ADMN-006-master-ingredient-catalog.md) |

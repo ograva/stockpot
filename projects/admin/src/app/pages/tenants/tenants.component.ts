@@ -108,6 +108,18 @@ export class AddTenantDialogComponent {
             <mat-option value="Asia/Singapore">Asia/Singapore (SGT)</mat-option>
           </mat-select>
         </mat-form-field>
+        <div class="d-flex align-items-center gap-8 m-b-8">
+          <span class="f-s-13 text-muted">Current Plan:</span>
+          <mat-chip highlighted>{{ data.planTier }}</mat-chip>
+        </div>
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Subscription Tier</mat-label>
+          <mat-select formControlName="planTier" data-test-id="admn-tenant-tier-select">
+            <mat-option value="starter">Starter</mat-option>
+            <mat-option value="growth">Growth</mat-option>
+            <mat-option value="enterprise">Enterprise</mat-option>
+          </mat-select>
+        </mat-form-field>
       </form>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
@@ -127,6 +139,7 @@ export class EditTenantDialogComponent implements OnInit {
     name: new FormControl('', [Validators.required, Validators.minLength(2)]),
     address: new FormControl(''),
     timezone: new FormControl('Asia/Manila'),
+    planTier: new FormControl<'starter' | 'growth' | 'enterprise'>('starter'),
   });
 
   get f() {
@@ -138,6 +151,7 @@ export class EditTenantDialogComponent implements OnInit {
       name: this.data.name,
       address: this.data.address,
       timezone: this.data.timezone,
+      planTier: this.data.planTier as 'starter' | 'growth' | 'enterprise' ?? 'starter',
     });
   }
 
@@ -224,10 +238,15 @@ export class TenantsComponent implements OnInit {
     ref
       .afterClosed()
       .subscribe(
-        (result: { name: string; address: string; timezone: string } | undefined) => {
+        (result: { name: string; address: string; timezone: string; planTier: 'starter' | 'growth' | 'enterprise' } | undefined) => {
           if (!result) return;
-          this.tenantService
-            .updateTenant(tenant.id, result)
+          const updates: Promise<void>[] = [
+            this.tenantService.updateTenant(tenant.id, result),
+          ];
+          if (result.planTier && result.planTier !== tenant.planTier) {
+            updates.push(this.tenantService.setSubscriptionTier(tenant.id, result.planTier));
+          }
+          Promise.all(updates)
             .then(() =>
               this.snackBar.open('Tenant updated.', 'Dismiss', {
                 duration: 3000,

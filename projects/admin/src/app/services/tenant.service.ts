@@ -16,6 +16,8 @@ import {
   RestaurantDoc,
   serializeRestaurant,
   deserializeRestaurant,
+  Subscription,
+  serializeSubscription,
 } from '@stockpot/shared';
 
 /** Tenant with its Firestore document ID. */
@@ -89,5 +91,36 @@ export class TenantService {
     await updateDoc(doc(this.firestore, `restaurants/${restaurantId}`), {
       status: 'active',
     });
+  }
+
+  /**
+   * Changes the subscription tier on the RestaurantDoc and writes a SubscriptionDoc
+   * history entry at `restaurants/{rId}/subscription/{timestamp}`.
+   */
+  async setSubscriptionTier(
+    restaurantId: string,
+    planTier: 'starter' | 'growth' | 'enterprise',
+  ): Promise<void> {
+    // 1. Update planTier on the RestaurantDoc
+    await updateDoc(doc(this.firestore, `restaurants/${restaurantId}`), {
+      planTier,
+    });
+
+    // 2. Write a SubscriptionDoc history entry
+    const now = new Date().toISOString();
+    const subscription: Subscription = {
+      restaurantId,
+      status: 'active',
+      planTier,
+      billingCycle: 'monthly',
+      currentPeriodStart: now,
+      currentPeriodEnd: new Date(
+        Date.now() + 30 * 24 * 60 * 60 * 1000,
+      ).toISOString(),
+    };
+    await setDoc(
+      doc(this.firestore, `restaurants/${restaurantId}/subscription/${Date.now()}`),
+      serializeSubscription(subscription),
+    );
   }
 }
