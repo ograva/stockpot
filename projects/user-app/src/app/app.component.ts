@@ -21,22 +21,32 @@ export class AppComponent implements OnDestroy {
   private readonly unsubscribeAuth: () => void;
 
   constructor() {
-    this.unsubscribeAuth = onAuthStateChanged(this.auth, (user) => {
-      // 1. Keep the shared signal in sync
+    this.unsubscribeAuth = onAuthStateChanged(this.auth, async (user) => {
+      // 1. Keep the Firebase User signal in sync
       this.core.setCurrentUser(user);
 
-      // 2. Skip the first emission — initial routing is already handled
+      // 2. Load AppUser (role) from Firestore via restaurantId custom claim
+      if (user) {
+        await this.core.loadAppUser(user);
+      } else {
+        this.core.setAppUser(null);
+      }
+
+      // 3. Skip the first emission — initial routing is already handled
       if (this.isFirstEmission) {
         this.isFirstEmission = false;
         return;
       }
 
-      // 3. React to session transitions (login / logout / token expiry)
+      // 4. React to session transitions (login / logout / token expiry)
       const url = this.router.url;
       if (user) {
         // User just signed in — redirect away from auth pages
         if (url.startsWith('/authentication') || url === '/') {
-          this.router.navigate(['/dashboard']);
+          const role = this.core.appUser()?.role;
+          // staff goes straight to kitchen; everyone else to dashboard
+          const destination = role === 'staff' ? '/kitchen' : '/dashboard';
+          this.router.navigate([destination]);
         }
       } else {
         // User signed out or token expired — redirect away from protected routes
