@@ -5,10 +5,13 @@
     "ng": "ng",
     "start": "ng serve admin",
     "start:user": "ng serve user-app --port 4400",
-    "start:all": "concurrently \"npm run start\" \"npm run start:user\"",
-    "build": "ng build admin && ng build user-app",
+    "start:vendor": "ng serve vendor-app --port 4600",
+    "start:bridge": "cd local-bridge && npm run dev",
+    "start:all": "concurrently \"npm run start\" \"npm run start:user\" \"npm run start:vendor\"",
+    "build": "ng build admin && ng build user-app && ng build vendor-app",
     "build:admin": "ng build admin",
     "build:user": "ng build user-app",
+    "build:vendor": "ng build vendor-app",
     "watch": "ng build admin --watch --configuration development",
     "test": "ng test",
     "test:e2e:admin": "playwright test --config=playwright.config.admin.ts",
@@ -24,7 +27,7 @@
     "firebase:emulators:kill": "pkill -f 'firebase.*emulators\\|cloud-firestore-emulator\\|cloud-storage-rules-runtime\\|ui_server' 2>/dev/null; pkill -f 'java.*emulator' 2>/dev/null; echo 'Emulator processes killed'",
     "firebase:emulators:restart": "npm run firebase:emulators:kill && sleep 2 && npm run firebase:emulators",
     "firebase:deploy": "npx firebase deploy",
-    "dev": "concurrently -n admin,user,firebase -c cyan,green,yellow \"npm run start\" \"npm run start:user\" \"npm run firebase:emulators\""
+    "dev": "concurrently -n admin,user,vendor,firebase -c cyan,green,magenta,yellow \"npm run start\" \"npm run start:user\" \"npm run start:vendor\" \"npm run firebase:emulators\""
   },
   "private": true,
   "dependencies": {

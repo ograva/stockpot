@@ -1,405 +1,457 @@
-# StockPot - AI Coding Guidelines
+# StockPot — AI Coding Guidelines
 
-## Project Overview
-StockPot is an **Angular 19 workspace (monorepo)** with Firebase backend integration, targeting SMB restaurants in the Philippines. It features two applications sharing a common Firebase infrastructure:
-- **Admin app** (port 4200): StockPot platform operator dashboard — manages tenants, subscriptions, and platform analytics.
-- **User-app** (port 4400): The subscriber product — restaurant owners and staff manage recipes, inventory, purchase orders, and cost accounting.
+> **Living context:** Deep project documentation lives in `docs/context/`. Read those files before making architectural decisions.
+> **NEVER** read from `docs/base_template/` — it contains blank starter templates, not project state.
 
-This architecture is designed by Novus Apps for scalable, maintainable SaaS applications.
+---
 
-## Why Monorepo Architecture?
+## 1. Project Overview
 
-This project uses a **monorepo workspace** for strategic architectural reasons:
+**StockPot** is a three-sided SaaS platform built by **Novus Apps** for SMB restaurants in the Philippines. It digitizes a 30-year-old expert Excel model into a closed-loop system that couples purchasing, receiving, preparation, and sales reconciliation — eliminating the operational guesswork that costs restaurant owners food-cost margin.
 
-### Technical Benefits
-1. **Code Sharing** - Services, models, interfaces, and utilities shared between apps without duplication
-2. **Unified Dependency Management** - Single source of truth for Angular/Material versions across all apps
-3. **Atomic Changes** - Update shared APIs and all consumers in one commit
-4. **Consistent Tooling** - Single TypeScript config, linting rules, and build configuration
-5. **Type Safety Across Apps** - Shared TypeScript interfaces ensure consistency
+| Field | Details |
+| :--- | :--- |
+| **Owner** | Novus Apps |
+| **Stack** | Angular 21 + Firebase + Material 21 + Tailwind 4 |
+| **Architecture** | Angular monorepo (`angular.json`) + single Firebase project |
+| **Admin App** | `projects/admin` — port 4200 — Platform operator dashboard |
+| **User-App** | `projects/user-app` — port 4400 — Restaurant operations PWA (offline-first) |
+| **Vendor Portal** | `projects/vendor-app` — port 4600 — Supplier self-service catalog (new) |
+| **Hardware Bridge** | `local-bridge/` — port 3500 — Node.js Express server (on-premise, new) |
+| **Shared Library** | `projects/shared` — importable as `@stockpot/shared` |
+| **Backend** | Firebase Auth, Firestore, Cloud Functions (Node.js 22), Storage, FCM |
+| **E2E Testing** | Playwright + Chromium |
+| **Unit Testing** | Jasmine + Karma |
 
-### Development Benefits
-1. **Single Repository** - Developers work on admin and user apps without switching repos
-2. **Faster Onboarding** - One repo to clone, one `npm install`, one development environment
-3. **Simplified Reviews** - Pull requests can span both apps when implementing features
-4. **Reduced Context Switching** - Work on related features across apps simultaneously
+> For complete context see: `docs/context/PRD.md`, `docs/context/Architecture.md`, `docs/context/CONSTRAINTS.md`, `docs/context/ProjectBrief.md`.
 
-### Deployment Benefits
-1. **Independent Deployment** - Deploy admin and user apps separately despite shared code
-2. **Coordinated Releases** - Release both apps together when features span both
-3. **Shared Backend** - Single Firebase project serves both applications
-4. **Simplified CI/CD** - One pipeline builds and deploys all applications
+---
 
-## Workspace Structure
+## 2. Workspace Structure
 
 ```
 stockpot/
 ├── projects/
-│   ├── admin/              # Platform operator dashboard (port 4200)
-│   │   └── src/            # Admin-specific code
-│   └── user-app/           # Subscriber product — restaurant management (port 4400)
-│       └── src/            # User app-specific code
-├── functions/              # Firebase Cloud Functions (Node.js 22)
-├── environments/           # Shared Firebase configurations
-└── docs/                   # Comprehensive documentation
+│   ├── admin/                    # Port 4200 — Platform operator dashboard
+│   │   └── src/app/
+│   │       ├── layouts/          #   FullComponent + BlankComponent layouts
+│   │       ├── pages/            #   auth/, tenants/, catalog/, dashboard/
+│   │       ├── services/         #   AdminCoreService, TenantService, PlatformCatalogService
+│   │       ├── material.module.ts
+│   │       ├── app.config.ts
+│   │       └── app.routes.ts
+│   │
+│   ├── user-app/                 # Port 4400 — Restaurant subscriber PWA (offline-first)
+│   │   └── src/app/
+│   │       ├── layouts/          #   FullLayout (auth), BlankLayout (login)
+│   │       ├── pages/            #   auth/, master-data/, replenishment/, kitchen/,
+│   │       │                     #   reconciliation/, alerts/
+│   │       ├── services/         #   CoreService, StoreForwardService, HardwareBridgeService
+│   │       ├── guards/           #   auth.guard.ts, role.guard.ts
+│   │       ├── material.module.ts
+│   │       ├── app.config.ts
+│   │       └── app.routes.ts
+│   │
+│   ├── vendor-app/               # Port 4600 — Supplier Portal (new)
+│   │   └── src/app/
+│   │       ├── pages/            #   login/, catalog/, orders/
+│   │       ├── services/         #   VendorCoreService, VendorCatalogService
+│   │       ├── material.module.ts
+│   │       ├── app.config.ts
+│   │       └── app.routes.ts
+│   │
+│   └── shared/                   # Angular library — @stockpot/shared
+│       └── src/
+│           ├── index.ts          #   Barrel export (public API)
+│           └── models/           #   ALL Firestore Doc interfaces (DAT-302)
+│               ├── restaurant.model.ts           # v2 — adds status field
+│               ├── app-user.model.ts             # v1 — owner/manager/staff roles
+│               ├── raw-material.model.ts         # v2 — adds parMinimum, criticalThreshold
+│               ├── recipe.model.ts               # v2 — adds parPortions
+│               ├── vendor.model.ts               # v2 — RestaurantSupplierDoc (renamed)
+│               ├── sub-component.model.ts
+│               ├── subscription.model.ts
+│               ├── purchase-order.model.ts       # new
+│               ├── platform-vendor.model.ts      # new
+│               ├── vendor-catalog-item.model.ts  # new
+│               ├── platform-uom.model.ts         # new
+│               ├── platform-ingredient.model.ts  # new
+│               ├── reconciliation.model.ts       # new
+│               ├── alert-config.model.ts         # new
+│               ├── platform-admin-user.model.ts  # new
+│               └── notification.model.ts         # new
+│
+├── local-bridge/                 # Port 3500 — Node.js 22 Express hardware bridge (new)
+│   ├── package.json              #   @stockpot/local-bridge, type: "module"
+│   ├── tsconfig.json             #   ESM / NodeNext
+│   └── src/
+│       ├── index.ts              #   Express entry — PORT env, ALLOWED_ORIGIN CORS
+│       ├── routes/               #   health.route.ts, scale.route.ts, printer.route.ts
+│       └── adapters/             #   scale.adapter.ts (serialport), printer.adapter.ts (ESC/POS)
+│
+├── functions/                    # Firebase Cloud Functions (Node.js 22)
+│   └── src/
+│       ├── index.ts              #   Function registrations
+│       ├── handlers/             #   back-calculation, deduction, alert, price-propagation
+│       └── models/               #   Minimal server-side Doc interfaces (no serialize/deserialize)
+│
+├── environments/                 # Shared Firebase config: local, staging, prod
+├── e2e/                          # Playwright E2E tests (admin/ and user-app/ flows)
+├── emulator-data/                # Firebase emulator snapshot for local dev
+├── docs/
+│   ├── context/                  # ✅ LIVING DOCS — always read these
+│   │   ├── PRD.md                #   Feature modules, user stories, NFRs
+│   │   ├── Architecture.md       #   Tech stack, data models, system diagrams
+│   │   ├── CONSTRAINTS.md        #   Golden rules — cannot be violated
+│   │   └── DECISION_LOG.md       #   ADL entries for all architectural decisions
+│   ├── base_template/            # ❌ BLANK TEMPLATES — DO NOT read as project reference
+│   ├── stories/                  #   54 user story files (10 module folders)
+│   └── testing/                  #   Test strategy and registry
+├── angular.json                  # Project registry (admin, user-app, vendor-app, shared)
+├── tsconfig.json                 # @stockpot/shared path alias defined here
+└── firestore.rules               # Multi-tenant security rules
 ```
 
-## Architecture
+### Path Alias
 
-### Admin Application (`projects/admin/`)
-- **Purpose**: StockPot platform operator dashboard — manage tenants, subscription tiers, and platform-wide settings
-- **Port**: 4200
-- **Layout System**: 
-  - **FullComponent** (`layouts/full/`): Main authenticated layout with header, sidebar, and content area
-  - **BlankComponent** (`layouts/blank/`): Minimal layout for authentication pages
-  - Routes wrapped in layout components via route configuration in `app.routes.ts`
-  - Responsive breakpoints: Mobile (<768px), Tablet (769-1024px), Desktop (>1024px)
-- **Features**: ApexCharts integration, Material Design, comprehensive admin tools
-- **Navigation**: Defined in `sidebar-data.ts` with nested menu support
+All Angular apps import shared models via:
 
-### User Application (`projects/user-app/`)
-- **Purpose**: Subscriber product for restaurant management — recipes, inventory, purchase orders, cost accounting
-- **Port**: 4400
-- **Roles**: `owner` | `franchisee` | `staff` (kitchen read-only)
-- **Layout**: Lightweight, role-aware design (customize independently from admin)
-- **Shared Resources**: Can import services/models from admin app via TypeScript paths
-
-### Firebase Backend (`functions/`)
-- **Runtime**: Node.js 22 (aligned with Firebase Functions v6 requirements)
-- **Purpose**: Serverless backend for both apps
-- **Features**: HTTP endpoints, Firestore triggers, callable functions
-- **Local Development**: Firebase emulators for offline development
-
-### Shared Environments (`environments/`)
-- **Purpose**: Centralized Firebase configuration for staging and production
-- **Usage**: Both apps reference shared environment files to avoid duplication
-- **Pattern**: `environment.{stage}.ts` files with Firebase config objects
-
-### State Management Pattern
-Uses Angular 19 **signals** for reactive state (not RxJS Subjects):
 ```typescript
-// Example from CoreService
-private optionsSignal = signal<AppSettings>(defaults);
-getOptions() { return this.optionsSignal(); }
-setOptions(options: Partial<AppSettings>) {
-  this.optionsSignal.update((current) => ({ ...current, ...options }));
+import { RestaurantDoc, deserializeRestaurant } from '@stockpot/shared';
+```
+
+Resolves to `projects/shared/src/index.ts` via `paths` in root `tsconfig.json`. **Never duplicate model definitions inside individual app `src/` folders.**
+
+---
+
+## 3. Product Modules
+
+The 10 module prefix codes below are canonical — they drive story files, component names, test IDs, and Cloud Function names. Do not invent new prefix codes.
+
+| Prefix | Module Name | App | Sprint | One-Line Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `AUTH` | User-App Authentication & Onboarding | user-app | 1 | Login, role-based guards, first-run restaurant setup wizard |
+| `ADMN` | Admin App (Platform Operator) | admin | 1 | Tenant management, subscriptions, platform catalog (UoMs, ingredients, suppliers) |
+| `MSTR` | Restaurant Master Data Setup | user-app | 1 | Raw materials, sub-components, recipes, par levels, back-calculation engine |
+| `REPO` | Smart PO & Replenishment Engine | user-app | 2 | Shortfall dashboard, auto-PO generation, PO approval and history |
+| `KTCH` | Kitchen Execution Hub | user-app | 2 | Touch-first receiving, prep batching, stock adjustments — tablet-optimised |
+| `SYNC` | Offline Sync & Receiving | user-app | 2 | StoreForwardService queue, offline banner, reconnect drain |
+| `HWBR` | Local Hardware Bridge | local-bridge | 2 | Node.js Express proxying weighing scales and thermal printers |
+| `VNDR` | Vendor / Supplier Portal | vendor-app | 2 | Supplier catalog self-management, price updates, incoming PO view |
+| `RCNC` | Reconciliation & Variance Auditing | user-app | 3 | CSV POS upload, theoretical deduction run, expected vs. actual count sheet |
+| `ALRT` | Alert Engine | user-app + CF | 3 | Stockout and over-budget alerts via Firestore triggers, FCM push, in-app notifications |
+
+### User Roles
+
+| Role | App | Access Level |
+| :--- | :--- | :--- |
+| `owner` | user-app | Full access — configuration, approvals, reconciliation, alerts |
+| `manager` | user-app | Kitchen, PO management, stock adj. Cannot access master data or reconciliation |
+| `staff` | user-app | `/kitchen/*` routes only. Read-only stock views |
+| `platform_admin` | admin | Custom Firebase Auth claim. All platform catalog writes |
+| `vendorId` claim | vendor-app | Custom Firebase Auth claim. Scoped to `vendors/{vendorId}` collection |
+
+---
+
+## 4. Architecture Conventions
+
+### State Management — Angular Signals Only
+
+Use Angular 21 **Signals** for all reactive state. Do not use `BehaviorSubject`, `Subject`, or similar manually managed RxJS patterns for shared state.
+
+```typescript
+// ✅ CORRECT — CoreService pattern
+private _user = signal<AppUser | null>(null);
+getUser() { return this._user(); }
+refreshCurrentUser(user: AppUser | null) {
+  this._user.set(null);          // break object reference
+  this._user.set(user);          // force Signal re-evaluation
+}
+
+// ❌ INCORRECT
+private userSubject = new BehaviorSubject<AppUser | null>(null);
+```
+
+### Data Layer — DAT-302 Pattern
+
+Every Firestore document model **must** follow the three-export pattern. All models live in `projects/shared/src/models/` and are imported via `@stockpot/shared`.
+
+```typescript
+// Example: projects/shared/src/models/purchase-order.model.ts
+
+export const PURCHASE_ORDER_SCHEMA_VERSION = 1;
+
+export interface PurchaseOrderDoc {
+  _schemaVersion: number;
+  status: PurchaseOrderStatus;
+  supplierId: string;
+  lineItems: PurchaseOrderLineItem[];
+  // ... other fields
+}
+
+export type PurchaseOrder = Omit<PurchaseOrderDoc, '_schemaVersion'>;
+
+export function deserializePurchaseOrder(raw: unknown): PurchaseOrder {
+  const data = (raw ?? {}) as Partial<PurchaseOrderDoc>;
+  // migration gate here
+  return { status: data.status ?? 'DRAFT', /* ... */ };
+}
+
+export function serializePurchaseOrder(po: PurchaseOrder): PurchaseOrderDoc {
+  return {
+    _schemaVersion: PURCHASE_ORDER_SCHEMA_VERSION,
+    status: po.status,
+    // optional fields: ...(po.notes ? { notes: po.notes } : {})
+  };
 }
 ```
-- `NavService.currentUrl` tracks navigation via signal
-- Avoid introducing traditional observables for new state
 
-### Module Organization
-- **Standalone components** (Angular 19 pattern) - no NgModules except `MaterialModule`
-- `MaterialModule`: Central re-export of all Material imports (39+ modules)
-- `TablerIconsModule`: Icon system using `angular-tabler-icons`
-- Import `MaterialModule` in components, never individual Material modules
+**Rules:**
+- `serialize()`: omit empty optionals — **never write `null` to Firestore**
+- `deserialize()`: handle schema migration and fill defaults
+- `_schemaVersion` is always written; never stripped
+- Optional fields use conditional spread: `...(value ? { field: value } : {})`
 
-### Navigation Structure
-Navigation defined in `sidebar-data.ts` using `NavItem` interface:
+### Auth — onAuthStateChanged Once Only
+
+Firebase Auth state is registered **once** in `AppComponent` via `onAuthStateChanged`. All other layers (services, guards, components) read the **`CoreService` signal** — they never call `getAuth()` directly.
+
+### Component Pattern — Standalone Only
+
 ```typescript
-interface NavItem {
-  displayName?: string;
-  iconName?: string;      // Tabler icon name
-  navCap?: string;        // Category header
-  route?: string;
-  children?: NavItem[];   // Nested navigation
-  chip?: boolean;         // PRO badge indicator
-  external?: boolean;     // External link flag
-}
-```
-- Free features route locally (e.g., `/ui-components/badge`)
-- PRO features link to `https://flexy-angular-main.netlify.app/...` with `external: true`
-
-## Development Workflows
-
-### Commands
-```bash
-npm start          # Dev server (default port 4200)
-npm run build      # Production build → dist/Flexy
-npm run watch      # Watch mode with dev config
-npm test           # Karma + Jasmine tests
-```
-
-### Build Configuration
-- Production budget: 12MB (unusually high - verify if intentional)
-- Output: `dist/Flexy` directory
-- Netlify SPA redirect configured via `netlify.toml`
-
-### Styling System
-- **SCSS architecture** in `src/assets/scss/`:
-  - `style.scss`: Root import file
-  - `_variables.scss`: Global Sass variables
-  - `helpers/`: Utility classes (spacing, flexbox, colors)
-  - `override-component/`: Material component customizations
-  - `themecolors/`: Theme definitions (default: orange_theme)
-- Component styles use `styleUrls` with SCSS
-- Material theme applied via `@use "@angular/material" as mat;`
-
-## Project-Specific Conventions
-
-### Component Creation
-```typescript
-// Standalone pattern (Angular 19)
 @Component({
   selector: 'app-example',
   imports: [CommonModule, MaterialModule, RouterModule],
   templateUrl: './example.component.html',
-  styleUrls: ['./example.component.scss']
+  styleUrls: ['./example.component.scss'],
 })
-export class ExampleComponent { }
+export class ExampleComponent {}
 ```
-- Always include `imports` array (no module declarations)
-- Selector prefix: `app-`
-- Use `ViewEncapsulation.None` only when customizing Material themes globally
 
-### Routing Patterns
+- Always include `imports` array (no NgModule declarations)
+- Selector prefix: `app-`
+- Import `MaterialModule` — never import individual Material modules directly
+- `ViewEncapsulation.None` only for global Material theme customisations
+
+### Routing — Lazy Loading
+
 ```typescript
-// Lazy loading with loadChildren
 {
-  path: 'feature',
-  loadChildren: () => import('./pages/feature/feature.routes')
-    .then((m) => m.FeatureRoutes)
+  path: 'replenishment',
+  loadChildren: () => import('./pages/replenishment/replenishment.routes')
+    .then((m) => m.ReplenishmentRoutes)
 }
 ```
-- Route files named `*.routes.ts` exporting `Routes` constant
-- All routes nested under `FullComponent` or `BlankComponent`
 
-### Service Injection
-- All services use `providedIn: 'root'` (singleton pattern)
-- No manual provider registration in components
-- Example services: `CoreService` (settings), `NavService` (navigation state)
+All routes are nested under `FullLayout` or `BlankLayout`. Route files are named `*.routes.ts`.
 
-### Responsive Handling
-```typescript
-// BreakpointObserver pattern from FullComponent
-this.breakpointObserver.observe([MOBILE_VIEW, TABLET_VIEW])
-  .subscribe((state) => {
-    this.isMobileScreen = state.breakpoints[MOBILE_VIEW];
-  });
+### Styling — Material 21 + Tailwind 4
+
+- **Material 21** for complex behaviors: forms, dialogs, tables, navigation
+- **Tailwind 4** for layout and spacing
+- SCSS architecture in `src/assets/scss/`
+- Material theme via `@use '@angular/material' as mat;`
+
+### Kitchen UX Rules (KTCH + SYNC modules)
+
+- Minimum **44px tap targets** on all interactive elements
+- **Dialog-driven** workflows only — never dense table-based entry
+- **No keyboard entry** as primary mechanism — use +/– controls
+- All writes pass through `StoreForwardService` when in offline mode
+
+---
+
+## 5. Development Commands
+
+```bash
+# ─── Full development environment ─────────────────────────────────────────────
+npm run dev                  # All apps + Firebase emulators (recommended)
+
+# ─── Individual processes ──────────────────────────────────────────────────────
+npm run start                # Admin app only    → http://localhost:4200
+npm run start:user           # User-App only     → http://localhost:4400
+npm run start:vendor         # Vendor Portal     → http://localhost:4600
+npm run start:bridge         # Hardware bridge   → http://localhost:3500
+npm run start:all            # All 3 Angular apps (no emulators)
+npm run firebase:emulators   # Firebase emulators only → http://localhost:8080
+
+# ─── Build ────────────────────────────────────────────────────────────────────
+npm run build                # Production build — all apps
+npm run build:admin          # Admin only
+npm run build:user           # User-App only
+npm run build:vendor         # Vendor Portal only
+
+# ─── Testing ──────────────────────────────────────────────────────────────────
+npm test                     # Karma + Jasmine unit tests
+npm run test:e2e:admin       # Playwright E2E — Admin app (requires all 3 processes running)
+npm run test:e2e:user        # Playwright E2E — User-App
+npm run test:e2e             # Both E2E suites
+
+# ─── Firebase utilities ────────────────────────────────────────────────────────
+npm run firebase:emulators:export   # Save emulator state to emulator-data/
+npm run firebase:deploy             # Deploy to Firebase Hosting (production)
 ```
-- Use CDK `BreakpointObserver` for layout shifts
-- Store breakpoint state in component properties
 
-## Key Files Reference
-- `app.config.ts`: Application providers (router, HTTP, Material, i18n)
-- `material.module.ts`: Single source for all Material imports
-- `sidebar-data.ts`: Navigation menu configuration
-- `config.ts`: App-wide settings interface and defaults
-- `angular.json`: Build configuration with CommonJS dependency allowlist
+### Port Reference
 
-## Common Pitfalls
-- **Don't** import individual Material modules - always use `MaterialModule`
-- **Don't** use RxJS BehaviorSubject for new state - use Angular signals
-- **Don't** create NgModules - use standalone component pattern
-- **Don't** modify `allowedCommonJsDependencies` without understanding bundle impact
-- **Verify** PRO features aren't implemented locally - they should link externally
+| Port | Service | Used By |
+| :--- | :--- | :--- |
+| 4200 | Admin Angular app | Browser, Playwright admin E2E |
+| 4400 | User-App Angular PWA | Browser, Playwright user E2E |
+| 4600 | Vendor Portal Angular app | Browser |
+| 3500 | Local Hardware Bridge (Express) | User-App browser (same machine only) |
+| 8080 | Firebase Emulator UI | Browser |
+| 8085 | Firestore Emulator | All Angular apps |
+| 9099 | Auth Emulator | All Angular apps |
+| 5001 | Functions Emulator | All Angular apps |
+| 9199 | Storage Emulator | All Angular apps |
 
-## External Dependencies
-- **ApexCharts** (`ng-apexcharts`): Chart library for dashboards
-- **ngx-scrollbar**: Custom scrollbar styling
-- **ngx-translate**: i18n support (TranslateModule configured in app.config)
-- Material Design theming via Sass `@use` imports
+> **Emulators first!** Always start `npm run firebase:emulators` before the Angular apps, or use `npm run dev`. Angular apps call `connectAuthEmulator()` and `connectFirestoreEmulator()` at bootstrap — missing emulators cause silent CORS failures.
 
-## Testing Philosophy: Build with Testing in Mind
+---
 
-This project follows a **test-first mindset** where every feature is designed for testability from the ground up.
+## 6. Key Files Reference
+
+| File | Purpose |
+| :--- | :--- |
+| `projects/admin/src/app/app.config.ts` | Admin app providers — Firebase, router, Material |
+| `projects/admin/src/app/app.routes.ts` | Admin route tree (lazy-loaded pages) |
+| `projects/admin/src/app/material.module.ts` | Admin Material module — all Material re-exports |
+| `projects/user-app/src/app/app.config.ts` | User-App providers — Firebase with emulator toggle, StoreForward, i18n |
+| `projects/user-app/src/app/app.routes.ts` | User-App route tree with role guards |
+| `projects/user-app/src/app/material.module.ts` | User-App Material module |
+| `projects/vendor-app/src/app/app.config.ts` | Vendor Portal providers — Firebase Auth (magic link) |
+| `projects/vendor-app/src/app/app.routes.ts` | Vendor Portal routes: login, catalog, orders |
+| `projects/vendor-app/src/app/material.module.ts` | Vendor Portal Material module |
+| `projects/shared/src/index.ts` | `@stockpot/shared` barrel export — all model imports start here |
+| `projects/shared/src/models/` | All DAT-302 Firestore model files |
+| `environments/environment.local.ts` | Local Firebase config — always used during dev |
+| `functions/src/index.ts` | Cloud Function registrations |
+| `local-bridge/src/index.ts` | Hardware bridge Express server entry point |
+| `tsconfig.json` (root) | `@stockpot/shared` path alias defined here |
+| `angular.json` | All four project definitions (admin, user-app, vendor-app, shared) |
+| `firestore.rules` | Multi-tenant security rules — `restaurants/{rId}`, `vendors/{vId}`, platform claims |
+| `docs/context/PRD.md` | Feature modules, user stories, acceptance criteria (54 stories) |
+| `docs/context/Architecture.md` | Tech stack, data models, API design, system diagrams |
+| `docs/context/CONSTRAINTS.md` | Golden Rules — all code must comply |
+| `docs/context/DECISION_LOG.md` | ADL-001 → ADL-009 — architectural decision history |
+
+---
+
+## 7. Common Pitfalls
+
+- **Don't** import individual Material modules — always use `MaterialModule` from the local app's `material.module.ts`
+- **Don't** use `BehaviorSubject` or `Subject` for new shared state — use Angular Signals
+- **Don't** create NgModules — use the standalone component pattern exclusively
+- **Don't** write `null` to Firestore — use conditional spread for optional fields
+- **Don't** duplicate model interfaces in app `src/` folders — import exclusively from `@stockpot/shared`
+- **Don't** call `getAuth()` in services, guards, or components — read `CoreService` signal only
+- **Don't** hardcode the local-bridge URL — it is user-configurable via HWBR-004 settings; read from `HardwareBridgeService`
+- **Don't** implement REPO-002 Auto-PO as a Cloud Function — it is client-side computation by design (ADL-004)
+- **Don't** read from `docs/base_template/` — it contains blank starter templates, not this project's actual state
+- **Verify** the `vendors/` collection path: top-level `vendors/{vendorId}` = `PlatformVendorDoc`; restaurant-scoped = `restaurants/{rId}/suppliers/{supplierId}` = `RestaurantSupplierDoc` (renamed in v2, ADL-003)
+- **Verify** ADMN-005/ADMN-006 use flat Firestore paths `platform_uom/{id}` and `platform_ingredients/{id}` — not the nested `platform/catalog/uom/` path referenced in the PRD ACs (ADL-002)
+- **Verify** conflict resolution for SYNC-003: last-write-wins + conflict logged to `syncConflicts/` subcollection — no manual review queue in v1 (ADL-005)
+
+---
+
+## 8. Testing Philosophy — Build with Testing in Mind
+
+Every feature is designed for testability. Test IDs are added at component creation time, not retroactively.
 
 ### Testing Strategy
 
-1. **Unit Tests** - Jasmine/Karma for component and service logic
-2. **E2E Tests** - Playwright for user flows and integration scenarios
-3. **Test Data Attributes** - Every interactive element gets a `data-test-id` attribute
-4. **Environment Safety** - E2E tests run only on emulators and staging, never production
+| Layer | Tool | Scope |
+| :--- | :--- | :--- |
+| Unit Tests | Jasmine + Karma | Component logic, model serialize/deserialize transforms, CostService calculations |
+| E2E Tests | Playwright + Chromium | Full user flows — admin and user-app grouped separately |
+| Test Data Attributes | `data-test-id` | Every interactive element; required for all Playwright selectors |
+| Environment Safety | `playwright.config.*.ts` | E2E runs only on emulators and staging — never production |
 
-### Test Data Attributes Convention
+### `data-test-id` Convention
 
 **ALWAYS add `data-test-id` attributes to HTML elements for Playwright targeting:**
 
 ```html
-<!-- ✅ CORRECT: Testable elements -->
-<button data-test-id="login-submit-button" (click)="login()">Login</button>
-<input data-test-id="email-input" type="email" [(ngModel)]="email" />
-<div data-test-id="user-profile-card" class="card">...</div>
-<mat-select data-test-id="role-selector" [(value)]="selectedRole">...</mat-select>
-<a data-test-id="nav-dashboard-link" routerLink="/dashboard">Dashboard</a>
+<!-- ✅ CORRECT -->
+<button data-test-id="repo-generate-po-button" (click)="generatePo()">Generate PO</button>
+<input data-test-id="auth-login-email" type="email" [(ngModel)]="email" />
+<div data-test-id="ktch-receiving-confirm-button" class="card">...</div>
+<mat-select data-test-id="mstr-uom-selector" [(value)]="selectedUom">...</mat-select>
 
-<!-- ❌ INCORRECT: No test ID -->
-<button (click)="login()">Login</button>
-<input type="email" [(ngModel)]="email" />
+<!-- ❌ INCORRECT — no test ID -->
+<button (click)="generatePo()">Generate PO</button>
 ```
 
-### Test ID Naming Convention
+**Format:** `[module-prefix]-[element-type]-[action/purpose]` (kebab-case)
 
-Format: `[page/feature]-[element-type]-[action/purpose]`
-
-**Examples:**
-- `login-submit-button` - Login page submit button
-- `user-list-table` - User listing table
-- `sidebar-nav-dashboard` - Dashboard navigation in sidebar
-- `profile-edit-form` - Profile editing form
-- `alert-success-message` - Success alert message
-- `product-card-123` - Product card with ID 123
-
-**Guidelines:**
-- Use kebab-case (lowercase with hyphens)
-- Be descriptive but concise
-- Include dynamic IDs when needed (`user-card-${user.id}`)
-- Group related elements with common prefix (`cart-item-`, `cart-total-`, `cart-checkout-`)
-
-### Component Development Pattern
-
-When creating components, add test IDs immediately:
-
-```typescript
-@Component({
-  selector: 'app-user-card',
-  template: `
-    <mat-card data-test-id="user-card-{{user.id}}">
-      <mat-card-header data-test-id="user-card-header">
-        <mat-card-title data-test-id="user-name">{{user.name}}</mat-card-title>
-      </mat-card-header>
-      <mat-card-actions>
-        <button 
-          data-test-id="user-edit-button-{{user.id}}"
-          (click)="editUser()">
-          Edit
-        </button>
-        <button 
-          data-test-id="user-delete-button-{{user.id}}"
-          (click)="deleteUser()">
-          Delete
-        </button>
-      </mat-card-actions>
-    </mat-card>
-  `
-})
-export class UserCardComponent {
-  @Input() user!: User;
-}
-```
-
-### E2E Test Organization
-
-Tests are organized by **user flows** in the `e2e/` folder:
-
-```
-e2e/
-├── flows/
-│   ├── authentication/
-│   │   ├── T001-login.spec.ts
-│   │   └── T002-registration.spec.ts
-│   ├── user-management/
-│   │   ├── T010-create-user.spec.ts
-│   │   └── T011-edit-user.spec.ts
-│   └── dashboard/
-│       └── T020-dashboard-overview.spec.ts
-├── fixtures/
-│   └── test-data.json
-└── playwright.config.ts
-```
+**Examples from this project:**
+- `auth-login-email`, `auth-login-submit`, `auth-setup-wizard`
+- `repo-generate-po-button`, `repo-po-history-table`
+- `ktch-receiving-confirm-button`, `sync-offline-banner`
+- `admn-uom-list-table`, `admn-uom-add-button`
+- `rcnc-run-deduction-button`
+- `vndr-price-edit-field-{ingredientId}`
 
 ### Test Numbering System
 
-- **T000-T099**: Authentication & Authorization flows
-- **T100-T199**: User Management flows
-- **T200-T299**: Dashboard & Analytics flows
-- **T300-T399**: Content Management flows
-- **T400-T499**: Settings & Configuration flows
-- **T900-T999**: Edge cases & Error handling
+| Range | Scope |
+| :--- | :--- |
+| T000–T099 | Authentication & Authorization (AUTH module) |
+| T100–T199 | Admin App flows (ADMN module) |
+| T200–T299 | Master Data Setup (MSTR module) |
+| T300–T399 | PO & Replenishment (REPO module) |
+| T400–T499 | Kitchen Execution Hub (KTCH + SYNC modules) |
+| T500–T599 | Vendor Portal flows (VNDR module) |
+| T600–T699 | Reconciliation & Auditing (RCNC module) |
+| T700–T799 | Alert Engine (ALRT module) |
+| T900–T999 | Edge cases & Error handling |
 
-**Sub-numbering**: Use sequential numbers within each category (T001, T002, T003...)
+### E2E File Structure
 
-### Testing Environment Rules
-
-```typescript
-// playwright.config.ts - Environment detection
-const baseURL = process.env.TEST_ENV === 'production' 
-  ? throw new Error('E2E tests cannot run on production!') 
-  : process.env.TEST_ENV === 'staging'
-    ? 'https://staging.example.com'
-    : 'http://localhost:4200'; // Defaults to emulators
 ```
-
-**Allowed environments:**
-- ✅ **Local with Firebase Emulators** (default)
-- ✅ **Staging environment**
-- ❌ **Production** (blocked by configuration)
+e2e/
+├── admin/
+│   └── flows/
+│       ├── authentication/       # T100-T109
+│       ├── tenants/              # T110-T119
+│       └── catalog/              # T120-T149
+├── user-app/
+│   └── flows/
+│       ├── authentication/       # T000-T009
+│       ├── master-data/          # T200-T249
+│       ├── replenishment/        # T300-T349
+│       ├── kitchen/              # T400-T449
+│       └── reconciliation/       # T600-T649
+├── helpers/
+│   └── auth.helper.ts
+└── playwright.config.ts          # Blocks production runs
+```
 
 ### Writing Playwright Tests
 
 ```typescript
-// e2e/flows/authentication/T001-login.spec.ts
+// e2e/user-app/flows/replenishment/T300-generate-po.spec.ts
 import { test, expect } from '@playwright/test';
 
-test.describe('T001: User Login Flow', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-  });
-
-  test('T001.1: should login with valid credentials', async ({ page }) => {
-    // Use data-test-id selectors
-    await page.locator('[data-test-id="login-email-input"]').fill('admin@test.com');
-    await page.locator('[data-test-id="login-password-input"]').fill('password123');
-    await page.locator('[data-test-id="login-submit-button"]').click();
-    
-    // Verify navigation
-    await expect(page).toHaveURL('/dashboard');
-    await expect(page.locator('[data-test-id="dashboard-welcome-message"]')).toBeVisible();
-  });
-
-  test('T001.2: should show error for invalid credentials', async ({ page }) => {
-    await page.locator('[data-test-id="login-email-input"]').fill('wrong@test.com');
-    await page.locator('[data-test-id="login-password-input"]').fill('wrong');
-    await page.locator('[data-test-id="login-submit-button"]').click();
-    
-    await expect(page.locator('[data-test-id="login-error-message"]')).toBeVisible();
+test.describe('T300: Auto-PO Generation', () => {
+  test('T300.1: should generate draft PO from shortfall list in under 3 seconds', async ({ page }) => {
+    await page.goto('/replenishment');
+    const start = Date.now();
+    await page.locator('[data-test-id="repo-generate-po-button"]').click();
+    await expect(page.locator('[data-test-id="repo-po-draft-status"]')).toBeVisible();
+    expect(Date.now() - start).toBeLessThan(3000);
   });
 });
 ```
 
-### Unit Testing
-
-- Keep unit tests (`*.spec.ts`) alongside components
-- Test component logic, not implementation details
-- Mock Firebase services in unit tests
+### Environment Safety
 
 ```typescript
-// user-card.component.spec.ts
-describe('UserCardComponent', () => {
-  it('should emit edit event when edit button clicked', () => {
-    const fixture = TestBed.createComponent(UserCardComponent);
-    const compiled = fixture.nativeElement;
-    
-    const editButton = compiled.querySelector('[data-test-id="user-edit-button"]');
-    // Test logic...
-  });
-});
+// playwright.config.admin.ts
+const baseURL = process.env['TEST_ENV'] === 'production'
+  ? (() => { throw new Error('E2E tests cannot run on production!'); })()
+  : process.env['TEST_ENV'] === 'staging'
+    ? 'https://staging.stockpot.ph'
+    : 'http://localhost:4200';  // Default: emulators
 ```
-
-### Coverage Goals
-
-- **Unit Tests**: 80%+ code coverage
-- **E2E Tests**: Cover all critical user flows
-- **Test Registry**: Maintain up-to-date test documentation
-
-### CI/CD Integration
-
-```yaml
-# .github/workflows/test.yml
-- name: Run E2E Tests
-  run: |
-    npm run firebase:emulators &
-    npm run test:e2e:admin
-    npm run test:e2e:user
-  env:
-    TEST_ENV: emulators
-```
-
-## Testing Documentation
-
-See [`docs/testing/`](../docs/testing/) for comprehensive testing guides:
-- Test strategy and philosophy
-- Playwright setup and configuration
-- Test registry and numbering system
-- Writing effective tests
-- CI/CD integration

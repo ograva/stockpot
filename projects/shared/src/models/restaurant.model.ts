@@ -12,9 +12,10 @@
  *  - `timezone` defaults to Asia/Manila.
  */
 
-export const RESTAURANT_SCHEMA_VERSION = 1;
+export const RESTAURANT_SCHEMA_VERSION = 2;
 
 export type PlanTier = 'starter' | 'growth' | 'enterprise';
+export type RestaurantStatus = 'active' | 'suspended';
 
 /** Firestore document shape — includes infrastructure versioning field. */
 export interface RestaurantDoc {
@@ -32,6 +33,11 @@ export interface RestaurantDoc {
   currency: string;
   /** ISO 8601 creation timestamp. */
   createdAt: string;
+  /**
+   * Tenant status — 'suspended' blocks all sub-collection reads via Security Rules.
+   * Added in schema v2. Defaults to 'active' for all v1 records.
+   */
+  status: RestaurantStatus;
 }
 
 /**
@@ -48,6 +54,7 @@ export const RESTAURANT_DEFAULTS: Restaurant = {
   timezone: 'Asia/Manila',
   currency: 'PHP',
   createdAt: '',
+  status: 'active',
 };
 
 /**
@@ -60,7 +67,7 @@ export function deserializeRestaurant(raw: unknown): Restaurant {
 
   // --- Migration gate (expand as schema evolves) ---
   if (version < RESTAURANT_SCHEMA_VERSION) {
-    // v0 → v1: no structural changes needed yet.
+    // v1 → v2: 'status' added; default to 'active' for existing records.
   }
 
   return {
@@ -70,6 +77,7 @@ export function deserializeRestaurant(raw: unknown): Restaurant {
     timezone: data.timezone ?? RESTAURANT_DEFAULTS.timezone,
     currency: data.currency ?? RESTAURANT_DEFAULTS.currency,
     createdAt: data.createdAt ?? RESTAURANT_DEFAULTS.createdAt,
+    status: data.status ?? RESTAURANT_DEFAULTS.status,
   };
 }
 
@@ -86,5 +94,6 @@ export function serializeRestaurant(restaurant: Restaurant): RestaurantDoc {
     timezone: restaurant.timezone,
     currency: restaurant.currency,
     createdAt: restaurant.createdAt,
+    status: restaurant.status,
   };
 }

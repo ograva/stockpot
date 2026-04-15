@@ -359,7 +359,7 @@ Alerts convert passive data into proactive operational signals. The Alert Engine
 3. **ERP / accounting ledger integration** — No automatic journal entries to QuickBooks, Xero, or similar systems. Planned for v4.
 4. **Multi-branch / franchise consolidation reporting** — v1 supports one restaurant per tenant account. Cross-branch analytics and consolidated P&L reporting is a v2 feature.
 5. **In-app messaging between restaurants and suppliers** — The Vendor Portal allows catalog self-management; real-time chat, negotiation tools, or order confirmation workflows are out of scope.
-6. **Complex multi-level PO approval chains** — v1 supports a single-level approval: manager submits, owner approves. Multi-level hierarchies (e.g., franchisee → franchisor → finance) are out of scope.
+6. **Complex multi-level PO approval chains** — v1 supports a single-level approval: manager submits, owner approves. Multi-level hierarchies (e.g., manager → owner → finance chain) are out of scope.
 7. **Vendor self-registration** — In v1, suppliers are invited by the platform admin only. Public supplier self-registration is planned for v2.
 8. **Advanced forecasting and demand planning** — AI-driven replenishment suggestions or seasonal par-level adjustments are not in scope for v1.
 

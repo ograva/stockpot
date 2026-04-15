@@ -21,7 +21,7 @@
  *  - `vendorId` is optional — some materials may have no preferred vendor yet.
  */
 
-export const RAW_MATERIAL_SCHEMA_VERSION = 1;
+export const RAW_MATERIAL_SCHEMA_VERSION = 2;
 
 /** Firestore document shape. */
 export interface RawMaterialDoc {
@@ -33,14 +33,33 @@ export interface RawMaterialDoc {
   unit: string;
   /** Current on-hand stock quantity in `unit`. */
   currentStock: number;
-  /** Minimum stock threshold before a PO is triggered. */
+  /** Legacy manual threshold — kept for migration; use parMinimum for PO triggers. */
   parLevel: number;
+  /**
+   * Computed minimum stock threshold from MSTR-008 back-calculation engine.
+   * Written by Cloud Function. When `currentStock < parMinimum`, PO is triggered.
+   * Added in schema v2. Defaults to parLevel for v1 records.
+   */
+  parMinimum: number;
   /** Cost per `unit` in the restaurant's currency (e.g. PHP). */
   unitCost: number;
-  /** Reference to the preferred vendor; optional. */
+  /** Reference to the preferred supplier; references suppliers/ subcollection. Optional. */
   vendorId?: string;
   /** Category for grouping in the UI (e.g. "Dry Goods", "Proteins", "Dairy"). Optional. */
   category?: string;
+  /**
+   * ID of the platform ingredient this maps to (from platform_ingredients/ collection).
+   * Present when the ingredient was sourced from the platform catalog (MSTR-002).
+   * Absent when user-created custom ingredient (MSTR-003).
+   * Added in schema v2.
+   */
+  platformIngredientRef?: string;
+  /**
+   * Stock level at or below which a stockout alert fires (ALRT-001).
+   * Should be less than parMinimum (e.g. 1 day's supply buffer).
+   * Added in schema v2. Omitted until configured by owner.
+   */
+  criticalThreshold?: number;
 }
 
 /**
@@ -55,6 +74,7 @@ export const RAW_MATERIAL_DEFAULTS: RawMaterial = {
   unit: 'kg',
   currentStock: 0,
   parLevel: 0,
+  parMinimum: 0,
   unitCost: 0,
 };
 
@@ -67,7 +87,8 @@ export function deserializeRawMaterial(raw: unknown): RawMaterial {
 
   // --- Migration gate (expand as schema evolves) ---
   if (version < RAW_MATERIAL_SCHEMA_VERSION) {
-    // v0 → v1: no structural changes needed yet.
+    // v1 → v2: parMinimum added; default to parLevel value for existing records.
+    //          platformIngredientRef and criticalThreshold omitted for existing records.
   }
 
   return {
@@ -75,9 +96,17 @@ export function deserializeRawMaterial(raw: unknown): RawMaterial {
     unit: data.unit ?? RAW_MATERIAL_DEFAULTS.unit,
     currentStock: data.currentStock ?? RAW_MATERIAL_DEFAULTS.currentStock,
     parLevel: data.parLevel ?? RAW_MATERIAL_DEFAULTS.parLevel,
+    parMinimum:
+      data.parMinimum ?? data.parLevel ?? RAW_MATERIAL_DEFAULTS.parMinimum,
     unitCost: data.unitCost ?? RAW_MATERIAL_DEFAULTS.unitCost,
     ...(data.vendorId ? { vendorId: data.vendorId } : {}),
     ...(data.category ? { category: data.category } : {}),
+    ...(data.platformIngredientRef
+      ? { platformIngredientRef: data.platformIngredientRef }
+      : {}),
+    ...(typeof data.criticalThreshold === 'number'
+      ? { criticalThreshold: data.criticalThreshold }
+      : {}),
   };
 }
 
@@ -91,9 +120,16 @@ export function serializeRawMaterial(material: RawMaterial): RawMaterialDoc {
     unit: material.unit,
     currentStock: material.currentStock,
     parLevel: material.parLevel,
+    parMinimum: material.parMinimum,
     unitCost: material.unitCost,
     ...(material.vendorId ? { vendorId: material.vendorId } : {}),
     ...(material.category ? { category: material.category } : {}),
+    ...(material.platformIngredientRef
+      ? { platformIngredientRef: material.platformIngredientRef }
+      : {}),
+    ...(typeof material.criticalThreshold === 'number'
+      ? { criticalThreshold: material.criticalThreshold }
+      : {}),
   };
 }
 
@@ -104,7 +140,7 @@ export function serializeRawMaterial(material: RawMaterial): RawMaterialDoc {
  * and a purchase order should be generated.
  */
 export function isBelowPar(material: RawMaterial): boolean {
-  return material.currentStock <= material.parLevel;
+  return material.currentStock <= material.parMinimum;
 }
 
 /**

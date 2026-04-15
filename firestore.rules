@@ -62,10 +62,10 @@ service cloud.firestore {
         exists(/databases/$(database)/documents/restaurants/$(restaurantId)/users/$(request.auth.uid));
     }
 
-    // Caller has owner or franchisee role — full management access.
+    // Caller has owner or manager role — full management access.
     function isManager(restaurantId) {
       return isMember(restaurantId) &&
-        (userRole(restaurantId) == 'owner' || userRole(restaurantId) == 'franchisee');
+        (userRole(restaurantId) == 'owner' || userRole(restaurantId) == 'manager');
     }
 
     // ─── Restaurant multi-tenant collection ──────────────────────────────────

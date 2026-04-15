@@ -21,7 +21,7 @@
  *  - `Recipe` is the UI-facing type (no `_schemaVersion`).
  */
 
-export const RECIPE_SCHEMA_VERSION = 1;
+export const RECIPE_SCHEMA_VERSION = 2;
 
 /** A direct raw material line in a recipe (e.g. 5g of salt). */
 export interface RecipeRawIngredient {
@@ -71,6 +71,13 @@ export interface RecipeDoc {
   notes?: string;
   /** Whether this recipe is currently active on the menu. */
   isActive: boolean;
+  /**
+   * Minimum portions target for this recipe.
+   * Input to the MSTR-008 back-calculation engine which derives parMinimum
+   * for each raw material in this recipe's ingredient chain.
+   * Added in schema v2. Defaults to 0 until configured by owner.
+   */
+  parPortions: number;
 }
 
 /**
@@ -90,6 +97,7 @@ export const RECIPE_DEFAULTS: Recipe = {
   theoreticalCost: 0,
   actualCost: 0,
   isActive: true,
+  parPortions: 0,
 };
 
 /**
@@ -101,7 +109,7 @@ export function deserializeRecipe(raw: unknown): Recipe {
 
   // --- Migration gate (expand as schema evolves) ---
   if (version < RECIPE_SCHEMA_VERSION) {
-    // v0 → v1: no structural changes needed yet.
+    // v1 → v2: parPortions added; defaults to 0 for existing records.
   }
 
   return {
@@ -115,6 +123,7 @@ export function deserializeRecipe(raw: unknown): Recipe {
     theoreticalCost: data.theoreticalCost ?? RECIPE_DEFAULTS.theoreticalCost,
     actualCost: data.actualCost ?? RECIPE_DEFAULTS.actualCost,
     isActive: data.isActive ?? RECIPE_DEFAULTS.isActive,
+    parPortions: data.parPortions ?? RECIPE_DEFAULTS.parPortions,
     ...(data.category ? { category: data.category } : {}),
     ...(data.notes ? { notes: data.notes } : {}),
   };
@@ -135,6 +144,7 @@ export function serializeRecipe(recipe: Recipe): RecipeDoc {
     theoreticalCost: recipe.theoreticalCost,
     actualCost: recipe.actualCost,
     isActive: recipe.isActive,
+    parPortions: recipe.parPortions,
     ...(recipe.category ? { category: recipe.category } : {}),
     ...(recipe.notes ? { notes: recipe.notes } : {}),
   };

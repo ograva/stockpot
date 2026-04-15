@@ -6,7 +6,7 @@
 
 export const APP_USER_SCHEMA_VERSION = 1;
 
-export type AppUserRole = 'owner' | 'franchisee' | 'staff';
+export type AppUserRole = 'owner' | 'manager' | 'staff';
 
 export interface AppUserDoc {
   _schemaVersion: number;

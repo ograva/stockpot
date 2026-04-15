@@ -1,7 +1,7 @@
 # Plan: StockPot SaaS Implementation
 
 **TL;DR**  
-Implement **StockPot**, an inventory and recipe management SaaS for SMB restaurants (Philippines market). The **admin app** is for StockPot platform operators; the **user-app** is the product subscribers use, with owner/franchisee and staff/kitchen roles. Connect raw material tracking, sub-recipe costing, and automated PO generation through a `restaurants/{restaurantId}` multi-tenant Firestore architecture.
+Implement **StockPot**, an inventory and recipe management SaaS for SMB restaurants (Philippines market). The **admin app** is for StockPot platform operators; the **user-app** is the product subscribers use, with owner/manager and staff/kitchen roles. Connect raw material tracking, sub-recipe costing, and automated PO generation through a `restaurants/{restaurantId}` multi-tenant Firestore architecture.
 
 ---
 
@@ -19,7 +19,7 @@ Implement **StockPot**, an inventory and recipe management SaaS for SMB restaura
 ```
 restaurants/{restaurantId}/
   profile           (name, address, subscription tier)
-  users/            (owner, franchisee, staff - RBAC)
+  users/            (owner, manager, staff - RBAC)
   recipes/
   rawMaterials/
   subComponents/
@@ -48,7 +48,7 @@ payments/{paymentId}             (gateway-agnostic payment records)
 ### Phase 3: Core Data Models (DAT-302 standard)
 Each model file exports `SCHEMA_VERSION` + `Doc` interface + `serialize`/`deserialize`.
 1. `Restaurant` model — name, plan tier, timezone, currency.
-2. `AppUser` model — uid, restaurantId, role (`owner` | `franchisee` | `staff`).
+2. `AppUser` model — uid, restaurantId, role (`owner` | `manager` | `staff`).
 3. `Subscription` model — plan, status, billingCycle, paymentGateway placeholder.
 4. `PaymentGateway` interface — abstract gateway contract (PayMongo, Maya, GCash adapters scaffolded as stubs, not yet implemented).
 
@@ -111,4 +111,4 @@ Each model file exports `SCHEMA_VERSION` + `Doc` interface + `serialize`/`deseri
 - **Payment gateway**: Pluggable interface — PayMongo, Maya, GCash adapters scaffolded as stubs; Stripe explicitly excluded (Philippines market).
 - **State management**: Angular Signals only for all new state. No RxJS BehaviorSubjects.
 - **Admin app**: StockPot platform operator tool (internal use).
-- **User-app**: Subscriber product — roles are `owner` | `franchisee` | `staff` (kitchen read-only).
+- **User-app**: Subscriber product — roles are `owner` | `manager` | `staff` (kitchen read-only).

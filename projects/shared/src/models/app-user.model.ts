@@ -6,7 +6,7 @@
  *
  * Roles:
  *  - `owner`       — Full read/write access to all restaurant data and settings.
- *  - `franchisee`  — Same as owner but scoped to their branch/outlet.
+ *  - `manager`     — Kitchen Manager / Head Chef; manages POs and receiving but cannot access master data configuration.
  *  - `staff`       — Read-only access to recipes and prep tasks; cannot manage inventory or POs.
  *
  * Rules:
@@ -17,7 +17,7 @@
 
 export const APP_USER_SCHEMA_VERSION = 1;
 
-export type AppUserRole = 'owner' | 'franchisee' | 'staff';
+export type AppUserRole = 'owner' | 'manager' | 'staff';
 
 /** Firestore document shape. */
 export interface AppUserDoc {

@@ -1,0 +1,11 @@
+/* Vendor Portal global styles */
+@use '@angular/material' as mat;
+
+@include mat.core();
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: 'DM Sans', sans-serif;
+}
