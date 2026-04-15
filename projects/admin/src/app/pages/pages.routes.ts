@@ -87,7 +87,10 @@ export const PagesRoutes: Routes = [
     component: TenantsComponent,
     data: {
       title: 'Tenants',
-      urls: [{ title: 'Dashboard', url: '/dashboard/dashboard' }, { title: 'Tenants' }],
+      urls: [
+        { title: 'Dashboard', url: '/dashboard/dashboard' },
+        { title: 'Tenants' },
+      ],
     },
   },
   {
@@ -143,7 +146,10 @@ export const PagesRoutes: Routes = [
     component: AdminProfileComponent,
     data: {
       title: 'Operator Profile',
-      urls: [{ title: 'Dashboard', url: '/dashboard/dashboard' }, { title: 'Profile' }],
+      urls: [
+        { title: 'Dashboard', url: '/dashboard/dashboard' },
+        { title: 'Profile' },
+      ],
     },
   },
 ];

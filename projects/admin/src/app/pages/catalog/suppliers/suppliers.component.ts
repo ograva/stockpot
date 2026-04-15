@@ -10,7 +10,10 @@ import { MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterModule } from '@angular/router';
 import { MaterialModule } from 'src/app/material.module';
-import { PlatformCatalogService, VendorRow } from 'src/app/services/platform-catalog.service';
+import {
+  PlatformCatalogService,
+  VendorRow,
+} from 'src/app/services/platform-catalog.service';
 import { PlatformVendor } from '@stockpot/shared';
 
 // ── Add Supplier Dialog ──────────────────────────────────────────────────────
@@ -21,17 +24,30 @@ import { PlatformVendor } from '@stockpot/shared';
   template: `
     <h2 mat-dialog-title>Add Supplier</h2>
     <mat-dialog-content>
-      <form [formGroup]="form" novalidate class="d-flex flex-column gap-16 p-t-8">
+      <form
+        [formGroup]="form"
+        novalidate
+        class="d-flex flex-column gap-16 p-t-8"
+      >
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Business Name *</mat-label>
-          <input matInput formControlName="name" placeholder="e.g. FreshFarms Inc." />
+          <input
+            matInput
+            formControlName="name"
+            placeholder="e.g. FreshFarms Inc."
+          />
           @if (f['name'].touched && f['name'].hasError('required')) {
             <mat-error>Business name is required</mat-error>
           }
         </mat-form-field>
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Contact Email</mat-label>
-          <input matInput type="email" formControlName="email" placeholder="supplier@example.com" />
+          <input
+            matInput
+            type="email"
+            formControlName="email"
+            placeholder="supplier@example.com"
+          />
         </mat-form-field>
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Phone</mat-label>
@@ -41,8 +57,13 @@ import { PlatformVendor } from '@stockpot/shared';
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-stroked-button (click)="dialogRef.close()">Cancel</button>
-      <button mat-flat-button color="primary" (click)="save()"
-        [disabled]="form.invalid" data-test-id="admn-dialog-save-btn">
+      <button
+        mat-flat-button
+        color="primary"
+        (click)="save()"
+        [disabled]="form.invalid"
+        data-test-id="admn-dialog-save-btn"
+      >
         Save
       </button>
     </mat-dialog-actions>
@@ -118,7 +139,9 @@ export class SuppliersComponent implements OnInit {
           this.snackBar.open('Supplier added.', 'Dismiss', { duration: 3000 }),
         )
         .catch(() =>
-          this.snackBar.open('Failed to add supplier.', 'Dismiss', { duration: 3000 }),
+          this.snackBar.open('Failed to add supplier.', 'Dismiss', {
+            duration: 3000,
+          }),
         );
     });
   }
@@ -127,7 +150,9 @@ export class SuppliersComponent implements OnInit {
     this.catalogService
       .deactivateVendor(vendor.id)
       .then(() =>
-        this.snackBar.open('Supplier deactivated.', 'Dismiss', { duration: 3000 }),
+        this.snackBar.open('Supplier deactivated.', 'Dismiss', {
+          duration: 3000,
+        }),
       );
   }
 }

@@ -25,21 +25,37 @@ import { VendorCatalogItem } from '@stockpot/shared';
   template: `
     <h2 mat-dialog-title>Add Product to Catalog</h2>
     <mat-dialog-content>
-      <form [formGroup]="form" novalidate class="d-flex flex-column gap-16 p-t-8">
+      <form
+        [formGroup]="form"
+        novalidate
+        class="d-flex flex-column gap-16 p-t-8"
+      >
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Ingredient *</mat-label>
-          <mat-select formControlName="platformIngredientRef" data-test-id="admn-supplier-ing-select">
+          <mat-select
+            formControlName="platformIngredientRef"
+            data-test-id="admn-supplier-ing-select"
+          >
             @for (ing of ingredients; track ing.id) {
-              <mat-option [value]="ing.id">{{ ing.name }} ({{ ing.defaultUnit }})</mat-option>
+              <mat-option [value]="ing.id"
+                >{{ ing.name }} ({{ ing.defaultUnit }})</mat-option
+              >
             }
           </mat-select>
-          @if (f['platformIngredientRef'].touched && f['platformIngredientRef'].hasError('required')) {
+          @if (
+            f['platformIngredientRef'].touched &&
+            f['platformIngredientRef'].hasError('required')
+          ) {
             <mat-error>Ingredient is required</mat-error>
           }
         </mat-form-field>
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Product Name *</mat-label>
-          <input matInput formControlName="name" placeholder="e.g. All-Purpose Flour 25kg bag" />
+          <input
+            matInput
+            formControlName="name"
+            placeholder="e.g. All-Purpose Flour 25kg bag"
+          />
           @if (f['name'].touched && f['name'].hasError('required')) {
             <mat-error>Product name is required</mat-error>
           }
@@ -50,8 +66,12 @@ import { VendorCatalogItem } from '@stockpot/shared';
         </mat-form-field>
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Price per Unit (PHP) *</mat-label>
-          <input matInput type="number" formControlName="pricePerUnit"
-            data-test-id="admn-supplier-price-input" />
+          <input
+            matInput
+            type="number"
+            formControlName="pricePerUnit"
+            data-test-id="admn-supplier-price-input"
+          />
           @if (f['pricePerUnit'].touched && f['pricePerUnit'].hasError('min')) {
             <mat-error>Price must be ≥ 0</mat-error>
           }
@@ -64,8 +84,13 @@ import { VendorCatalogItem } from '@stockpot/shared';
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-stroked-button (click)="dialogRef.close()">Cancel</button>
-      <button mat-flat-button color="primary" (click)="save()"
-        [disabled]="form.invalid" data-test-id="admn-supplier-product-save-btn">
+      <button
+        mat-flat-button
+        color="primary"
+        (click)="save()"
+        [disabled]="form.invalid"
+        data-test-id="admn-supplier-product-save-btn"
+      >
         Add Product
       </button>
     </mat-dialog-actions>
@@ -106,7 +131,9 @@ export class AddProductDialogComponent implements OnInit {
         isAvailable: true,
         priceUpdatedAt: now,
         createdAt: now,
-        ...(value.platformIngredientRef ? { platformIngredientRef: value.platformIngredientRef } : {}),
+        ...(value.platformIngredientRef
+          ? { platformIngredientRef: value.platformIngredientRef }
+          : {}),
         ...(value.sku ? { sku: value.sku } : {}),
       };
       this.dialogRef.close(item);
@@ -131,7 +158,13 @@ export class SupplierDetailComponent implements OnInit {
   catalogItems = signal<CatalogItemRow[]>([]);
   isLoading = signal(true);
 
-  readonly displayedColumns = ['name', 'unit', 'pricePerUnit', 'priceUpdatedAt', 'availability'];
+  readonly displayedColumns = [
+    'name',
+    'unit',
+    'pricePerUnit',
+    'priceUpdatedAt',
+    'availability',
+  ];
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('vendorId') ?? '';

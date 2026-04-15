@@ -1,7 +1,13 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { NgApexchartsModule, ApexChart, ApexNonAxisChartSeries, ApexDataLabels, ApexLegend } from 'ng-apexcharts';
+import {
+  NgApexchartsModule,
+  ApexChart,
+  ApexNonAxisChartSeries,
+  ApexDataLabels,
+  ApexLegend,
+} from 'ng-apexcharts';
 import { MaterialModule } from 'src/app/material.module';
 import { TenantService, TenantRow } from 'src/app/services/tenant.service';
 
@@ -16,12 +22,20 @@ export class DashboardComponent implements OnInit {
   tenants = signal<TenantRow[]>([]);
   isLoading = signal(true);
 
-  activeCount = computed(() => this.tenants().filter((t) => t.status === 'active').length);
-  suspendedCount = computed(() => this.tenants().filter((t) => t.status === 'suspended').length);
+  activeCount = computed(
+    () => this.tenants().filter((t) => t.status === 'active').length,
+  );
+  suspendedCount = computed(
+    () => this.tenants().filter((t) => t.status === 'suspended').length,
+  );
 
   recentTenants = computed(() =>
     [...this.tenants()]
-      .sort((a, b) => new Date(b.createdAt ?? '').getTime() - new Date(a.createdAt ?? '').getTime())
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt ?? '').getTime() -
+          new Date(a.createdAt ?? '').getTime(),
+      )
       .slice(0, 5),
   );
 

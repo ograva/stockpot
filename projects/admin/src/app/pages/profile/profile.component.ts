@@ -12,11 +12,7 @@ import {
   EmailAuthProvider,
   updatePassword,
 } from '@angular/fire/auth';
-import {
-  Firestore,
-  doc,
-  updateDoc,
-} from '@angular/fire/firestore';
+import { Firestore, doc, updateDoc } from '@angular/fire/firestore';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MaterialModule } from 'src/app/material.module';
 import { CoreService } from 'src/app/services/core.service';
@@ -33,12 +29,18 @@ export class AdminProfileComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
 
   profileForm = new FormGroup({
-    displayName: new FormControl('', [Validators.required, Validators.minLength(2)]),
+    displayName: new FormControl('', [
+      Validators.required,
+      Validators.minLength(2),
+    ]),
   });
 
   passwordForm = new FormGroup({
     currentPassword: new FormControl('', [Validators.required]),
-    newPassword: new FormControl('', [Validators.required, Validators.minLength(8)]),
+    newPassword: new FormControl('', [
+      Validators.required,
+      Validators.minLength(8),
+    ]),
   });
 
   isSavingProfile = false;
@@ -58,10 +60,14 @@ export class AdminProfileComponent implements OnInit {
     this.isSavingProfile = true;
     const displayName = this.profileForm.value.displayName!;
     try {
-      await updateDoc(doc(this.firestore, `platform_admins/${user.uid}`), { displayName });
+      await updateDoc(doc(this.firestore, `platform_admins/${user.uid}`), {
+        displayName,
+      });
       this.snackBar.open('Profile updated.', 'Dismiss', { duration: 3000 });
     } catch {
-      this.snackBar.open('Failed to update profile.', 'Dismiss', { duration: 3000 });
+      this.snackBar.open('Failed to update profile.', 'Dismiss', {
+        duration: 3000,
+      });
     } finally {
       this.isSavingProfile = false;
     }
@@ -74,13 +80,18 @@ export class AdminProfileComponent implements OnInit {
     this.isChangingPassword = true;
     const { currentPassword, newPassword } = this.passwordForm.value;
     try {
-      const credential = EmailAuthProvider.credential(user.email, currentPassword!);
+      const credential = EmailAuthProvider.credential(
+        user.email,
+        currentPassword!,
+      );
       await reauthenticateWithCredential(user, credential);
       await updatePassword(user, newPassword!);
       this.snackBar.open('Password updated.', 'Dismiss', { duration: 3000 });
       this.passwordForm.reset();
     } catch {
-      this.snackBar.open('Incorrect current password.', 'Dismiss', { duration: 3000 });
+      this.snackBar.open('Incorrect current password.', 'Dismiss', {
+        duration: 3000,
+      });
     } finally {
       this.isChangingPassword = false;
     }

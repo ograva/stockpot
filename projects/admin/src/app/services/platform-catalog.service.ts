@@ -50,7 +50,9 @@ export class PlatformCatalogService {
     return collectionData(q, { idField: '_docId' }).pipe(
       map((docs) =>
         docs.map((d) => {
-          const { _docId, ...rest } = d as Record<string, unknown> & { _docId: string };
+          const { _docId, ...rest } = d as Record<string, unknown> & {
+            _docId: string;
+          };
           return { id: _docId, ...deserializePlatformUom(rest) };
         }),
       ),
@@ -59,7 +61,10 @@ export class PlatformCatalogService {
 
   async createUom(uom: PlatformUom): Promise<void> {
     const id = crypto.randomUUID();
-    await setDoc(doc(this.firestore, `platform_uom/${id}`), serializePlatformUom(uom));
+    await setDoc(
+      doc(this.firestore, `platform_uom/${id}`),
+      serializePlatformUom(uom),
+    );
   }
 
   async updateUom(id: string, partial: Partial<PlatformUom>): Promise<void> {
@@ -67,7 +72,9 @@ export class PlatformCatalogService {
   }
 
   async archiveUom(id: string): Promise<void> {
-    await updateDoc(doc(this.firestore, `platform_uom/${id}`), { isActive: false });
+    await updateDoc(doc(this.firestore, `platform_uom/${id}`), {
+      isActive: false,
+    });
   }
 
   // ── Ingredients ───────────────────────────────────────────────────────────
@@ -80,7 +87,9 @@ export class PlatformCatalogService {
     return collectionData(q, { idField: '_docId' }).pipe(
       map((docs) =>
         docs.map((d) => {
-          const { _docId, ...rest } = d as Record<string, unknown> & { _docId: string };
+          const { _docId, ...rest } = d as Record<string, unknown> & {
+            _docId: string;
+          };
           return { id: _docId, ...deserializePlatformIngredient(rest) };
         }),
       ),
@@ -96,7 +105,9 @@ export class PlatformCatalogService {
   }
 
   async archiveIngredient(id: string): Promise<void> {
-    await updateDoc(doc(this.firestore, `platform_ingredients/${id}`), { isActive: false });
+    await updateDoc(doc(this.firestore, `platform_ingredients/${id}`), {
+      isActive: false,
+    });
   }
 
   // ── Vendors / Suppliers ───────────────────────────────────────────────────
@@ -107,7 +118,9 @@ export class PlatformCatalogService {
     return collectionData(q, { idField: '_docId' }).pipe(
       map((docs) =>
         docs.map((d) => {
-          const { _docId, ...rest } = d as Record<string, unknown> & { _docId: string };
+          const { _docId, ...rest } = d as Record<string, unknown> & {
+            _docId: string;
+          };
           return { id: _docId, ...deserializePlatformVendor(rest) };
         }),
       ),
@@ -116,7 +129,10 @@ export class PlatformCatalogService {
 
   async createVendor(vendor: PlatformVendor): Promise<string> {
     const id = crypto.randomUUID();
-    await setDoc(doc(this.firestore, `vendors/${id}`), serializePlatformVendor(vendor));
+    await setDoc(
+      doc(this.firestore, `vendors/${id}`),
+      serializePlatformVendor(vendor),
+    );
     return id;
   }
 
@@ -132,7 +148,9 @@ export class PlatformCatalogService {
     return collectionData(q, { idField: '_docId' }).pipe(
       map((docs) =>
         docs.map((d) => {
-          const { _docId, ...rest } = d as Record<string, unknown> & { _docId: string };
+          const { _docId, ...rest } = d as Record<string, unknown> & {
+            _docId: string;
+          };
           return { id: _docId, ...deserializeVendorCatalogItem(rest) };
         }),
       ),
@@ -148,7 +166,9 @@ export class PlatformCatalogService {
       (i) => i.platformIngredientRef === item.platformIngredientRef,
     );
     if (duplicate) {
-      throw new Error('This ingredient is already listed in this supplier catalog.');
+      throw new Error(
+        'This ingredient is already listed in this supplier catalog.',
+      );
     }
     const id = crypto.randomUUID();
     await setDoc(

@@ -1,0 +1,84 @@
+<div class="p-6">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-semibold">Raw Materials</h1>
+        <div class="flex gap-2">
+            <button mat-stroked-button color="primary" data-test-id="mstr-material-custom-add-btn"
+                (click)="openAddCustomDialog()">
+                <mat-icon>add</mat-icon> Custom
+            </button>
+            <button mat-flat-button color="primary" data-test-id="mstr-material-add-btn"
+                (click)="openAddPlatformDialog()">
+                <mat-icon>add</mat-icon> From Catalog
+            </button>
+        </div>
+    </div>
+
+    <mat-form-field class="w-full mb-4">
+        <mat-label>Search</mat-label>
+        <input matInput data-test-id="mstr-material-search" [value]="searchQuery()"
+            (input)="searchQuery.set($any($event.target).value)" placeholder="Filter by name or category" />
+        <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-table [dataSource]="materials()" class="w-full">
+        <ng-container matColumnDef="name">
+            <mat-header-cell *matHeaderCellDef>Name</mat-header-cell>
+            <mat-cell *matCellDef="let row">
+                <span [attr.data-test-id]="'mstr-material-row-' + row.id">{{ row.name }}</span>
+                @if (!row.platformIngredientRef) {
+                <mat-chip class="ml-2 text-xs">Custom</mat-chip>
+                }
+            </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="unit">
+            <mat-header-cell *matHeaderCellDef>Unit</mat-header-cell>
+            <mat-cell *matCellDef="let row">{{ row.unit }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="unitCost">
+            <mat-header-cell *matHeaderCellDef>Unit Cost</mat-header-cell>
+            <mat-cell *matCellDef="let row">{{ row.unitCost | number:'1.2-2' }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="currentStock">
+            <mat-header-cell *matHeaderCellDef>Stock</mat-header-cell>
+            <mat-cell *matCellDef="let row">{{ row.currentStock }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="parLevel">
+            <mat-header-cell *matHeaderCellDef>Par</mat-header-cell>
+            <mat-cell *matCellDef="let row">{{ row.parMinimum || row.parLevel }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="supplier">
+            <mat-header-cell *matHeaderCellDef>Supplier</mat-header-cell>
+            <mat-cell *matCellDef="let row">{{ supplierName(row.vendorId) }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="type">
+            <mat-header-cell *matHeaderCellDef>Type</mat-header-cell>
+            <mat-cell *matCellDef="let row">
+                @if (row.platformIngredientRef) {
+                <mat-chip>Platform</mat-chip>
+                } @else {
+                <mat-chip>Custom</mat-chip>
+                }
+            </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="actions">
+            <mat-header-cell *matHeaderCellDef></mat-header-cell>
+            <mat-cell *matCellDef="let row">
+                <button mat-icon-button (click)="openEditDialog(row)" matTooltip="Edit">
+                    <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" (click)="deleteMaterial(row)" matTooltip="Delete">
+                    <mat-icon>delete</mat-icon>
+                </button>
+            </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+    </mat-table>
+
+    @if (materials().length === 0) {
+    <div class="text-center text-gray-500 py-8">
+        No raw materials yet. Add from the platform catalog or create a custom one.
+    </div>
+    }
+</div>

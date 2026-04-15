@@ -1,67 +1,67 @@
 <mat-card class="cardWithShadow">
-  <mat-card-header class="p-24 p-b-0">
-    <div class="d-flex justify-content-between align-items-center w-100">
-      <div>
-        <mat-card-title>Supplier Product Catalog</mat-card-title>
-        <mat-card-subtitle>Vendor ID: {{ vendorId() }}</mat-card-subtitle>
-      </div>
-      <button mat-flat-button color="primary" (click)="openAddProductDialog()"
-        data-test-id="admn-supplier-add-product-btn">
-        <mat-icon>add</mat-icon> Add Product
-      </button>
-    </div>
-  </mat-card-header>
+    <mat-card-header class="p-24 p-b-0">
+        <div class="d-flex justify-content-between align-items-center w-100">
+            <div>
+                <mat-card-title>Supplier Product Catalog</mat-card-title>
+                <mat-card-subtitle>Vendor ID: {{ vendorId() }}</mat-card-subtitle>
+            </div>
+            <button mat-flat-button color="primary" (click)="openAddProductDialog()"
+                data-test-id="admn-supplier-add-product-btn">
+                <mat-icon>add</mat-icon> Add Product
+            </button>
+        </div>
+    </mat-card-header>
 
-  <mat-card-content class="p-24">
-    @if (isLoading()) {
-      <div class="d-flex justify-content-center p-24">
-        <mat-spinner diameter="40"></mat-spinner>
-      </div>
-    } @else {
-      <mat-table [dataSource]="catalogItems()">
+    <mat-card-content class="p-24">
+        @if (isLoading()) {
+        <div class="d-flex justify-content-center p-24">
+            <mat-spinner diameter="40"></mat-spinner>
+        </div>
+        } @else {
+        <mat-table [dataSource]="catalogItems()">
 
-        <ng-container matColumnDef="name">
-          <mat-header-cell *matHeaderCellDef>Product Name</mat-header-cell>
-          <mat-cell *matCellDef="let row">{{ row.name }}</mat-cell>
-        </ng-container>
+            <ng-container matColumnDef="name">
+                <mat-header-cell *matHeaderCellDef>Product Name</mat-header-cell>
+                <mat-cell *matCellDef="let row">{{ row.name }}</mat-cell>
+            </ng-container>
 
-        <ng-container matColumnDef="unit">
-          <mat-header-cell *matHeaderCellDef>UoM</mat-header-cell>
-          <mat-cell *matCellDef="let row">
-            <mat-chip>{{ row.unit }}</mat-chip>
-          </mat-cell>
-        </ng-container>
+            <ng-container matColumnDef="unit">
+                <mat-header-cell *matHeaderCellDef>UoM</mat-header-cell>
+                <mat-cell *matCellDef="let row">
+                    <mat-chip>{{ row.unit }}</mat-chip>
+                </mat-cell>
+            </ng-container>
 
-        <ng-container matColumnDef="pricePerUnit">
-          <mat-header-cell *matHeaderCellDef>Current Price (PHP)</mat-header-cell>
-          <mat-cell *matCellDef="let row">₱ {{ row.pricePerUnit | number: '1.2-2' }}</mat-cell>
-        </ng-container>
+            <ng-container matColumnDef="pricePerUnit">
+                <mat-header-cell *matHeaderCellDef>Current Price (PHP)</mat-header-cell>
+                <mat-cell *matCellDef="let row">₱ {{ row.pricePerUnit | number: '1.2-2' }}</mat-cell>
+            </ng-container>
 
-        <ng-container matColumnDef="priceUpdatedAt">
-          <mat-header-cell *matHeaderCellDef>Last Price Update</mat-header-cell>
-          <mat-cell *matCellDef="let row">
-            {{ row.priceUpdatedAt ? (row.priceUpdatedAt | date: 'mediumDate') : '—' }}
-          </mat-cell>
-        </ng-container>
+            <ng-container matColumnDef="priceUpdatedAt">
+                <mat-header-cell *matHeaderCellDef>Last Price Update</mat-header-cell>
+                <mat-cell *matCellDef="let row">
+                    {{ row.priceUpdatedAt ? (row.priceUpdatedAt | date: 'mediumDate') : '—' }}
+                </mat-cell>
+            </ng-container>
 
-        <ng-container matColumnDef="availability">
-          <mat-header-cell *matHeaderCellDef>Availability</mat-header-cell>
-          <mat-cell *matCellDef="let row">
-            <mat-chip [color]="row.isAvailable ? 'primary' : 'warn'" highlighted>
-              {{ row.isAvailable ? 'Available' : 'Unavailable' }}
-            </mat-chip>
-          </mat-cell>
-        </ng-container>
+            <ng-container matColumnDef="availability">
+                <mat-header-cell *matHeaderCellDef>Availability</mat-header-cell>
+                <mat-cell *matCellDef="let row">
+                    <mat-chip [color]="row.isAvailable ? 'primary' : 'warn'" highlighted>
+                        {{ row.isAvailable ? 'Available' : 'Unavailable' }}
+                    </mat-chip>
+                </mat-cell>
+            </ng-container>
 
-        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-        <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+            <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+            <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
 
-        <tr class="mat-row" *matNoDataRow>
-          <td class="mat-cell p-24 text-muted" [attr.colspan]="displayedColumns.length">
-            No products listed by this supplier.
-          </td>
-        </tr>
-      </mat-table>
-    }
-  </mat-card-content>
+            <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell p-24 text-muted" [attr.colspan]="displayedColumns.length">
+                    No products listed by this supplier.
+                </td>
+            </tr>
+        </mat-table>
+        }
+    </mat-card-content>
 </mat-card>

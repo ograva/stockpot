@@ -1,0 +1,72 @@
+<div class="p-6">
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-2xl font-semibold">Par Levels</h1>
+            <p class="text-sm text-gray-500 mt-1">
+                Set the minimum portions target for each recipe. The back-calculation engine
+                will automatically update raw material par minimums.
+            </p>
+        </div>
+        <button mat-flat-button color="primary" data-test-id="mstr-par-save-btn"
+            [disabled]="saving() || parEntries().length === 0" (click)="saveAll()">
+            @if (saving()) {
+            <mat-spinner diameter="18" class="inline-block mr-2"></mat-spinner>
+            }
+            Save All
+        </button>
+    </div>
+
+    @if (parEntries().length === 0) {
+    <mat-card>
+        <mat-card-content>
+            <p class="text-gray-500 text-center py-4">
+                No recipes configured yet. Add recipes in the Recipes section first.
+            </p>
+        </mat-card-content>
+    </mat-card>
+    }
+
+    @for (entry of parEntries(); track entry.recipeId) {
+    <mat-card class="mb-3">
+        <mat-card-content class="flex items-center justify-between py-3">
+            <span class="font-medium">{{ entry.recipeName }}</span>
+            <mat-form-field style="width: 160px" class="mb-0">
+                <mat-label>Par Portions</mat-label>
+                <input matInput type="number" [attr.data-test-id]="'mstr-par-input-' + entry.recipeId"
+                    [value]="entry.parPortions" (change)="updateParPortions(entry, +$any($event.target).value)"
+                    min="0" />
+            </mat-form-field>
+        </mat-card-content>
+    </mat-card>
+    }
+
+    @if (rawMaterials().length > 0) {
+    <mat-divider class="my-6"></mat-divider>
+    <h2 class="text-lg font-medium mb-4">Computed Raw Material Par Minimums</h2>
+    <mat-table [dataSource]="rawMaterials()" class="w-full">
+        <ng-container matColumnDef="name">
+            <mat-header-cell *matHeaderCellDef>Raw Material</mat-header-cell>
+            <mat-cell *matCellDef="let row">{{ row.name }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="unit">
+            <mat-header-cell *matHeaderCellDef>Unit</mat-header-cell>
+            <mat-cell *matCellDef="let row">{{ row.unit }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="parMinimum">
+            <mat-header-cell *matHeaderCellDef>Par Minimum</mat-header-cell>
+            <mat-cell *matCellDef="let row">
+                <span [attr.data-test-id]="'mstr-rawmat-par-display-' + row.id">
+                    {{ row.parMinimum | number:'1.2-2' }}
+                </span>
+            </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="currentStock">
+            <mat-header-cell *matHeaderCellDef>On Hand</mat-header-cell>
+            <mat-cell *matCellDef="let row">{{ row.currentStock | number:'1.2-2' }}</mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="['name', 'unit', 'parMinimum', 'currentStock']"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: ['name', 'unit', 'parMinimum', 'currentStock'];"></mat-row>
+    </mat-table>
+    }
+</div>

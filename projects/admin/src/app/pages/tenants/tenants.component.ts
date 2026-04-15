@@ -23,10 +23,18 @@ import { TenantService, TenantRow } from 'src/app/services/tenant.service';
   template: `
     <h2 mat-dialog-title>Add Tenant</h2>
     <mat-dialog-content>
-      <form [formGroup]="form" novalidate class="d-flex flex-column gap-16 p-t-8">
+      <form
+        [formGroup]="form"
+        novalidate
+        class="d-flex flex-column gap-16 p-t-8"
+      >
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Restaurant Name *</mat-label>
-          <input matInput formControlName="name" data-test-id="admn-tenant-name-input" />
+          <input
+            matInput
+            formControlName="name"
+            data-test-id="admn-tenant-name-input"
+          />
           @if (f['name'].touched && f['name'].hasError('required')) {
             <mat-error>Name is required</mat-error>
           }
@@ -53,8 +61,13 @@ import { TenantService, TenantRow } from 'src/app/services/tenant.service';
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-stroked-button (click)="dialogRef.close()">Cancel</button>
-      <button mat-flat-button color="primary" (click)="save()"
-        [disabled]="form.invalid" data-test-id="admn-tenant-save-btn">
+      <button
+        mat-flat-button
+        color="primary"
+        (click)="save()"
+        [disabled]="form.invalid"
+        data-test-id="admn-tenant-save-btn"
+      >
         Save
       </button>
     </mat-dialog-actions>
@@ -89,10 +102,18 @@ export class AddTenantDialogComponent {
   template: `
     <h2 mat-dialog-title>Edit Tenant</h2>
     <mat-dialog-content>
-      <form [formGroup]="form" novalidate class="d-flex flex-column gap-16 p-t-8">
+      <form
+        [formGroup]="form"
+        novalidate
+        class="d-flex flex-column gap-16 p-t-8"
+      >
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Restaurant Name *</mat-label>
-          <input matInput formControlName="name" data-test-id="admn-tenant-edit-name-input" />
+          <input
+            matInput
+            formControlName="name"
+            data-test-id="admn-tenant-edit-name-input"
+          />
           @if (f['name'].touched && f['name'].hasError('required')) {
             <mat-error>Name is required</mat-error>
           }
@@ -114,7 +135,10 @@ export class AddTenantDialogComponent {
         </div>
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Subscription Tier</mat-label>
-          <mat-select formControlName="planTier" data-test-id="admn-tenant-tier-select">
+          <mat-select
+            formControlName="planTier"
+            data-test-id="admn-tenant-tier-select"
+          >
             <mat-option value="starter">Starter</mat-option>
             <mat-option value="growth">Growth</mat-option>
             <mat-option value="enterprise">Enterprise</mat-option>
@@ -124,8 +148,13 @@ export class AddTenantDialogComponent {
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-stroked-button (click)="dialogRef.close()">Cancel</button>
-      <button mat-flat-button color="primary" (click)="save()"
-        [disabled]="form.invalid" data-test-id="admn-tenant-save-btn">
+      <button
+        mat-flat-button
+        color="primary"
+        (click)="save()"
+        [disabled]="form.invalid"
+        data-test-id="admn-tenant-save-btn"
+      >
         Save
       </button>
     </mat-dialog-actions>
@@ -151,7 +180,9 @@ export class EditTenantDialogComponent implements OnInit {
       name: this.data.name,
       address: this.data.address,
       timezone: this.data.timezone,
-      planTier: this.data.planTier as 'starter' | 'growth' | 'enterprise' ?? 'starter',
+      planTier:
+        (this.data.planTier as 'starter' | 'growth' | 'enterprise') ??
+        'starter',
     });
   }
 
@@ -204,7 +235,16 @@ export class TenantsComponent implements OnInit {
     ref
       .afterClosed()
       .subscribe(
-        (result: { name: string; address: string; timezone: string; currency: string } | undefined) => {
+        (
+          result:
+            | {
+                name: string;
+                address: string;
+                timezone: string;
+                currency: string;
+              }
+            | undefined,
+        ) => {
           if (!result) return;
           const restaurantId = crypto.randomUUID();
           this.tenantService
@@ -238,13 +278,27 @@ export class TenantsComponent implements OnInit {
     ref
       .afterClosed()
       .subscribe(
-        (result: { name: string; address: string; timezone: string; planTier: 'starter' | 'growth' | 'enterprise' } | undefined) => {
+        (
+          result:
+            | {
+                name: string;
+                address: string;
+                timezone: string;
+                planTier: 'starter' | 'growth' | 'enterprise';
+              }
+            | undefined,
+        ) => {
           if (!result) return;
           const updates: Promise<void>[] = [
             this.tenantService.updateTenant(tenant.id, result),
           ];
           if (result.planTier && result.planTier !== tenant.planTier) {
-            updates.push(this.tenantService.setSubscriptionTier(tenant.id, result.planTier));
+            updates.push(
+              this.tenantService.setSubscriptionTier(
+                tenant.id,
+                result.planTier,
+              ),
+            );
           }
           Promise.all(updates)
             .then(() =>
@@ -270,12 +324,10 @@ export class TenantsComponent implements OnInit {
   }
 
   reactivate(tenant: TenantRow): void {
-    this.tenantService
-      .reactivateTenant(tenant.id)
-      .then(() =>
-        this.snackBar.open('Tenant reactivated.', 'Dismiss', {
-          duration: 3000,
-        }),
-      );
+    this.tenantService.reactivateTenant(tenant.id).then(() =>
+      this.snackBar.open('Tenant reactivated.', 'Dismiss', {
+        duration: 3000,
+      }),
+    );
   }
 }

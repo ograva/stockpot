@@ -1,0 +1,47 @@
+<div class="p-6">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-semibold">Sub-Components</h1>
+        <button mat-flat-button color="primary" data-test-id="mstr-subcomp-add-btn" (click)="openDialog()">
+            <mat-icon>add</mat-icon> Add Sub-Component
+        </button>
+    </div>
+
+    <mat-table [dataSource]="allSubComponents()" data-test-id="mstr-subcomp-list-table" class="w-full">
+        <ng-container matColumnDef="name">
+            <mat-header-cell *matHeaderCellDef>Name</mat-header-cell>
+            <mat-cell *matCellDef="let row">{{ row.name }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="yield">
+            <mat-header-cell *matHeaderCellDef>Yield</mat-header-cell>
+            <mat-cell *matCellDef="let row">
+                {{ row.yieldQty }} {{ row.yieldUnit }} @ {{ (row.yieldPercent * 100) | number:'1.0-0' }}%
+            </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="cost">
+            <mat-header-cell *matHeaderCellDef>Cost / Unit</mat-header-cell>
+            <mat-cell *matCellDef="let row">
+                {{ row.calculatedCostPerUnit | number:'1.2-2' }} PHP
+            </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="actions">
+            <mat-header-cell *matHeaderCellDef></mat-header-cell>
+            <mat-cell *matCellDef="let row">
+                <button mat-icon-button (click)="openDialog(row)" matTooltip="Edit">
+                    <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" (click)="delete(row)" matTooltip="Delete">
+                    <mat-icon>delete</mat-icon>
+                </button>
+            </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+    </mat-table>
+
+    @if (allSubComponents().length === 0) {
+    <div class="text-center text-gray-500 py-8">
+        No sub-components yet. Sub-components are intermediate preparations used in recipes.
+    </div>
+    }
+</div>

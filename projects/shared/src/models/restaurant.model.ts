@@ -12,7 +12,7 @@
  *  - `timezone` defaults to Asia/Manila.
  */
 
-export const RESTAURANT_SCHEMA_VERSION = 2;
+export const RESTAURANT_SCHEMA_VERSION = 3;
 
 export type PlanTier = 'starter' | 'growth' | 'enterprise';
 export type RestaurantStatus = 'active' | 'suspended';
@@ -38,6 +38,12 @@ export interface RestaurantDoc {
    * Added in schema v2. Defaults to 'active' for all v1 records.
    */
   status: RestaurantStatus;
+  /**
+   * IDs of platform UoMs the restaurant has activated (MSTR-001).
+   * Subset of `platform_uom` document IDs. Added in schema v3.
+   * Defaults to empty array for v1/v2 records.
+   */
+  activeUomIds?: string[];
 }
 
 /**
@@ -68,6 +74,7 @@ export function deserializeRestaurant(raw: unknown): Restaurant {
   // --- Migration gate (expand as schema evolves) ---
   if (version < RESTAURANT_SCHEMA_VERSION) {
     // v1 → v2: 'status' added; default to 'active' for existing records.
+    // v2 → v3: 'activeUomIds' added; default to [] for existing records.
   }
 
   return {
@@ -78,6 +85,7 @@ export function deserializeRestaurant(raw: unknown): Restaurant {
     currency: data.currency ?? RESTAURANT_DEFAULTS.currency,
     createdAt: data.createdAt ?? RESTAURANT_DEFAULTS.createdAt,
     status: data.status ?? RESTAURANT_DEFAULTS.status,
+    ...(data.activeUomIds ? { activeUomIds: data.activeUomIds } : {}),
   };
 }
 
@@ -95,5 +103,8 @@ export function serializeRestaurant(restaurant: Restaurant): RestaurantDoc {
     currency: restaurant.currency,
     createdAt: restaurant.createdAt,
     status: restaurant.status,
+    ...(restaurant.activeUomIds?.length
+      ? { activeUomIds: restaurant.activeUomIds }
+      : {}),
   };
 }

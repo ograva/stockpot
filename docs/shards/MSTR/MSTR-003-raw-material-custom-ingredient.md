@@ -6,7 +6,7 @@
 | **Module** | MSTR — Restaurant Master Data Setup |
 | **Story Ref** | MSTR-003 |
 | **Priority** | High |
-| **Status** | Not Started |
+| **Status** | Completed |
 | **Complexity** | S |
 | **Depends On** | MSTR-001 |
 

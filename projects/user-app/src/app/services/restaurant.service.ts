@@ -1,6 +1,12 @@
 import { Injectable, inject } from '@angular/core';
 import { Auth } from '@angular/fire/auth';
-import { Firestore, doc, setDoc, getDoc } from '@angular/fire/firestore';
+import {
+  Firestore,
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
+} from '@angular/fire/firestore';
 import {
   Restaurant,
   serializeRestaurant,
@@ -103,5 +109,18 @@ export class RestaurantService {
       doc(this.firestore, `restaurants/${restaurantId}`),
     );
     return snap.exists();
+  }
+
+  /**
+   * Partial-updates the `activeUomIds` field on the RestaurantDoc.
+   * Used by MSTR-001 to save the restaurant owner's active UoM selection.
+   */
+  async setActiveUoms(
+    restaurantId: string,
+    activeUomIds: string[],
+  ): Promise<void> {
+    await updateDoc(doc(this.firestore, `restaurants/${restaurantId}`), {
+      activeUomIds,
+    });
   }
 }

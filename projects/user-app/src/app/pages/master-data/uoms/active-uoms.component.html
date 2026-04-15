@@ -1,0 +1,47 @@
+<div class="p-6">
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-2xl font-semibold">Active Units of Measure</h1>
+            <p class="text-sm text-gray-500 mt-1">
+                Select the units used in your restaurant's recipes and materials.
+            </p>
+        </div>
+        <button mat-flat-button color="primary" data-test-id="mstr-uoms-save-btn"
+            [disabled]="saving() || selected().length === 0" (click)="save()">
+            @if (saving()) {
+            <mat-spinner diameter="18" class="inline-block mr-2"></mat-spinner>
+            }
+            Save
+        </button>
+    </div>
+
+    @if (uomToggles().length === 0) {
+    <mat-card>
+        <mat-card-content>
+            <p class="text-gray-500 text-center py-4">
+                No platform units of measure configured yet. Contact your platform admin.
+            </p>
+        </mat-card-content>
+    </mat-card>
+    }
+
+    @for (uom of uomToggles(); track uom.id) {
+    <mat-card class="mb-3">
+        <mat-card-content class="flex items-center justify-between py-3">
+            <div>
+                <span class="font-medium">{{ uom.name }}</span>
+                <span class="ml-2 text-gray-500 text-sm">({{ uom.symbol }})</span>
+                <mat-chip class="ml-2 text-xs capitalize">{{ uom.category }}</mat-chip>
+            </div>
+            <mat-slide-toggle [attr.data-test-id]="'mstr-uom-toggle-' + uom.id" [checked]="uom.active"
+                (change)="toggle(uom.id, $event.checked)"></mat-slide-toggle>
+        </mat-card-content>
+    </mat-card>
+    }
+
+    @if (selected().length === 0 && uomToggles().length > 0) {
+    <p class="text-amber-600 text-sm mt-2">
+        At least one unit must be selected before saving.
+    </p>
+    }
+</div>

@@ -9,7 +9,10 @@ import {
 import { MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MaterialModule } from 'src/app/material.module';
-import { PlatformCatalogService, UomRow } from 'src/app/services/platform-catalog.service';
+import {
+  PlatformCatalogService,
+  UomRow,
+} from 'src/app/services/platform-catalog.service';
 import { PlatformUom } from '@stockpot/shared';
 
 // ── Add UoM Dialog ───────────────────────────────────────────────────────────
@@ -20,7 +23,11 @@ import { PlatformUom } from '@stockpot/shared';
   template: `
     <h2 mat-dialog-title>Add Unit of Measure</h2>
     <mat-dialog-content>
-      <form [formGroup]="form" novalidate class="d-flex flex-column gap-16 p-t-8">
+      <form
+        [formGroup]="form"
+        novalidate
+        class="d-flex flex-column gap-16 p-t-8"
+      >
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Name *</mat-label>
           <input matInput formControlName="name" placeholder="e.g. Kilogram" />
@@ -50,8 +57,16 @@ import { PlatformUom } from '@stockpot/shared';
         </mat-form-field>
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Conversion Factor *</mat-label>
-          <input matInput type="number" formControlName="conversionFactor" placeholder="1" />
-          @if (f['conversionFactor'].touched && f['conversionFactor'].hasError('min')) {
+          <input
+            matInput
+            type="number"
+            formControlName="conversionFactor"
+            placeholder="1"
+          />
+          @if (
+            f['conversionFactor'].touched &&
+            f['conversionFactor'].hasError('min')
+          ) {
             <mat-error>Must be greater than 0</mat-error>
           }
         </mat-form-field>
@@ -59,8 +74,13 @@ import { PlatformUom } from '@stockpot/shared';
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-stroked-button (click)="dialogRef.close()">Cancel</button>
-      <button mat-flat-button color="primary" (click)="save()"
-        [disabled]="form.invalid" data-test-id="admn-dialog-save-btn">
+      <button
+        mat-flat-button
+        color="primary"
+        (click)="save()"
+        [disabled]="form.invalid"
+        data-test-id="admn-dialog-save-btn"
+      >
         Save
       </button>
     </mat-dialog-actions>
@@ -72,9 +92,14 @@ export class AddUomDialogComponent {
   form = new FormGroup({
     name: new FormControl('', [Validators.required]),
     symbol: new FormControl('', [Validators.required]),
-    category: new FormControl<PlatformUom['category']>('count', [Validators.required]),
+    category: new FormControl<PlatformUom['category']>('count', [
+      Validators.required,
+    ]),
     baseUnit: new FormControl('pcs', [Validators.required]),
-    conversionFactor: new FormControl(1, [Validators.required, Validators.min(0.000001)]),
+    conversionFactor: new FormControl(1, [
+      Validators.required,
+      Validators.min(0.000001),
+    ]),
   });
 
   get f() {
@@ -100,7 +125,14 @@ export class UomComponent implements OnInit {
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
 
-  readonly displayedColumns = ['name', 'symbol', 'category', 'conversionFactor', 'status', 'actions'];
+  readonly displayedColumns = [
+    'name',
+    'symbol',
+    'category',
+    'conversionFactor',
+    'status',
+    'actions',
+  ];
   showArchived = signal(false);
   uoms = signal<UomRow[]>([]);
   isLoading = signal(true);
@@ -138,7 +170,9 @@ export class UomComponent implements OnInit {
           this.snackBar.open('UoM created.', 'Dismiss', { duration: 3000 }),
         )
         .catch(() =>
-          this.snackBar.open('Failed to create UoM.', 'Dismiss', { duration: 3000 }),
+          this.snackBar.open('Failed to create UoM.', 'Dismiss', {
+            duration: 3000,
+          }),
         );
     });
   }
@@ -150,7 +184,9 @@ export class UomComponent implements OnInit {
         this.snackBar.open('UoM archived.', 'Dismiss', { duration: 3000 }),
       )
       .catch(() =>
-        this.snackBar.open('Failed to archive UoM.', 'Dismiss', { duration: 3000 }),
+        this.snackBar.open('Failed to archive UoM.', 'Dismiss', {
+          duration: 3000,
+        }),
       );
   }
 }

@@ -18,9 +18,9 @@
               <input matInput type="email" formControlName="email" data-test-id="admn-login-email"
                 placeholder="admin@stockpot.ph" />
               @if (f['email'].touched && f['email'].hasError('required')) {
-                <mat-error>Email is required</mat-error>
+              <mat-error>Email is required</mat-error>
               } @else if (f['email'].touched && f['email'].hasError('email')) {
-                <mat-error>Enter a valid email</mat-error>
+              <mat-error>Enter a valid email</mat-error>
               }
             </mat-form-field>
 
@@ -29,12 +29,12 @@
               <input matInput type="password" formControlName="password" data-test-id="admn-login-password"
                 placeholder="••••••••" />
               @if (f['password'].touched && f['password'].hasError('required')) {
-                <mat-error>Password is required</mat-error>
+              <mat-error>Password is required</mat-error>
               }
             </mat-form-field>
 
             @if (errorMessage()) {
-              <mat-error class="d-block m-b-12" data-test-id="admn-login-error">{{ errorMessage() }}</mat-error>
+            <mat-error class="d-block m-b-12" data-test-id="admn-login-error">{{ errorMessage() }}</mat-error>
             }
 
             <button mat-flat-button color="primary" class="w-100" type="submit" data-test-id="admn-login-submit"

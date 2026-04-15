@@ -29,6 +29,46 @@ export const routes: Routes = [
             path: 'profile',
             component: ProfileComponent,
           },
+          {
+            path: 'master-data',
+            children: [
+              {
+                path: 'uoms',
+                loadComponent: () =>
+                  import('./pages/master-data/uoms/active-uoms.component').then(
+                    (m) => m.ActiveUomsComponent,
+                  ),
+              },
+              {
+                path: 'raw-materials',
+                loadComponent: () =>
+                  import('./pages/master-data/raw-materials/raw-materials.component').then(
+                    (m) => m.RawMaterialsComponent,
+                  ),
+              },
+              {
+                path: 'sub-components',
+                loadComponent: () =>
+                  import('./pages/master-data/sub-components/sub-components.component').then(
+                    (m) => m.SubComponentsComponent,
+                  ),
+              },
+              {
+                path: 'recipes',
+                loadComponent: () =>
+                  import('./pages/master-data/recipes/recipes.component').then(
+                    (m) => m.RecipesComponent,
+                  ),
+              },
+              {
+                path: 'par-levels',
+                loadComponent: () =>
+                  import('./pages/master-data/par-levels/par-levels.component').then(
+                    (m) => m.ParLevelsComponent,
+                  ),
+              },
+            ],
+          },
         ],
       },
     ],

@@ -119,7 +119,10 @@ export class TenantService {
       ).toISOString(),
     };
     await setDoc(
-      doc(this.firestore, `restaurants/${restaurantId}/subscription/${Date.now()}`),
+      doc(
+        this.firestore,
+        `restaurants/${restaurantId}/subscription/${Date.now()}`,
+      ),
       serializeSubscription(subscription),
     );
   }

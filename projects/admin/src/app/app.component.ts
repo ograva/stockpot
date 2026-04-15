@@ -1,6 +1,11 @@
 import { Component, OnDestroy, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
-import { Auth, onAuthStateChanged, signOut, getIdTokenResult } from '@angular/fire/auth';
+import {
+  Auth,
+  onAuthStateChanged,
+  signOut,
+  getIdTokenResult,
+} from '@angular/fire/auth';
 import { CoreService } from './services/core.service';
 
 @Component({

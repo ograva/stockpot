@@ -52,14 +52,14 @@
 
 | Shard ID | Title | Module | Priority | Status | Complexity | Story Ref | File |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| MSTR-001 | Select Active UoMs from Platform Library | MSTR | High | Not Started | S | MSTR-001 | [MSTR-001](../shards/MSTR/MSTR-001-select-active-uoms.md) |
-| MSTR-002 | Raw Material Setup — Platform Catalog | MSTR | High | Not Started | M | MSTR-002 | [MSTR-002](../shards/MSTR/MSTR-002-raw-material-platform-catalog.md) |
-| MSTR-003 | Raw Material Setup — Custom Ingredient | MSTR | High | Not Started | S | MSTR-003 | [MSTR-003](../shards/MSTR/MSTR-003-raw-material-custom-ingredient.md) |
-| MSTR-004 | Link Raw Material to Supplier | MSTR | High | Not Started | S | MSTR-004 | [MSTR-004](../shards/MSTR/MSTR-004-link-raw-material-to-supplier.md) |
-| MSTR-005 | Sub-Component CRUD | MSTR | High | Not Started | M | MSTR-005 | [MSTR-005](../shards/MSTR/MSTR-005-sub-component-crud.md) |
-| MSTR-006 | Recipe CRUD & Portion Definition | MSTR | High | Not Started | M | MSTR-006 | [MSTR-006](../shards/MSTR/MSTR-006-recipe-crud.md) |
-| MSTR-007 | Recipe Ingredient Chain Mapping | MSTR | High | Not Started | L | MSTR-007 | [MSTR-007](../shards/MSTR/MSTR-007-recipe-ingredient-chain-mapping.md) |
-| MSTR-008 | Par Level Config & Back-Calculation Engine | MSTR | High | Not Started | XL | MSTR-008 | [MSTR-008](../shards/MSTR/MSTR-008-par-level-back-calculation.md) |
+| MSTR-001 | Select Active UoMs from Platform Library | MSTR | High | Completed | S | MSTR-001 | [MSTR-001](../shards/MSTR/MSTR-001-select-active-uoms.md) |
+| MSTR-002 | Raw Material Setup — Platform Catalog | MSTR | High | Completed | M | MSTR-002 | [MSTR-002](../shards/MSTR/MSTR-002-raw-material-platform-catalog.md) |
+| MSTR-003 | Raw Material Setup — Custom Ingredient | MSTR | High | Completed | S | MSTR-003 | [MSTR-003](../shards/MSTR/MSTR-003-raw-material-custom-ingredient.md) |
+| MSTR-004 | Link Raw Material to Supplier | MSTR | High | Completed | S | MSTR-004 | [MSTR-004](../shards/MSTR/MSTR-004-link-raw-material-to-supplier.md) |
+| MSTR-005 | Sub-Component CRUD | MSTR | High | Completed | M | MSTR-005 | [MSTR-005](../shards/MSTR/MSTR-005-sub-component-crud.md) |
+| MSTR-006 | Recipe CRUD & Portion Definition | MSTR | High | Completed | M | MSTR-006 | [MSTR-006](../shards/MSTR/MSTR-006-recipe-crud.md) |
+| MSTR-007 | Recipe Ingredient Chain Mapping | MSTR | High | Completed | L | MSTR-007 | [MSTR-007](../shards/MSTR/MSTR-007-recipe-ingredient-chain-mapping.md) |
+| MSTR-008 | Par Level Config & Back-Calculation Engine | MSTR | High | Completed | XL | MSTR-008 | [MSTR-008](../shards/MSTR/MSTR-008-par-level-back-calculation.md) |
 
 ---
 

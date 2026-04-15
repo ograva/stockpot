@@ -24,26 +24,42 @@ import { PlatformIngredient } from '@stockpot/shared';
   template: `
     <h2 mat-dialog-title>Add Ingredient</h2>
     <mat-dialog-content>
-      <form [formGroup]="form" novalidate class="d-flex flex-column gap-16 p-t-8">
+      <form
+        [formGroup]="form"
+        novalidate
+        class="d-flex flex-column gap-16 p-t-8"
+      >
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Name *</mat-label>
-          <input matInput formControlName="name" placeholder="e.g. All-Purpose Flour" />
+          <input
+            matInput
+            formControlName="name"
+            placeholder="e.g. All-Purpose Flour"
+          />
           @if (f['name'].touched && f['name'].hasError('required')) {
             <mat-error>Name is required</mat-error>
           }
         </mat-form-field>
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Category</mat-label>
-          <input matInput formControlName="category" placeholder="e.g. Dry Goods" />
+          <input
+            matInput
+            formControlName="category"
+            placeholder="e.g. Dry Goods"
+          />
         </mat-form-field>
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Default UoM *</mat-label>
           <mat-select formControlName="defaultUnit">
             @for (uom of uoms; track uom.id) {
-              <mat-option [value]="uom.symbol">{{ uom.name }} ({{ uom.symbol }})</mat-option>
+              <mat-option [value]="uom.symbol"
+                >{{ uom.name }} ({{ uom.symbol }})</mat-option
+              >
             }
           </mat-select>
-          @if (f['defaultUnit'].touched && f['defaultUnit'].hasError('required')) {
+          @if (
+            f['defaultUnit'].touched && f['defaultUnit'].hasError('required')
+          ) {
             <mat-error>Default UoM is required</mat-error>
           }
         </mat-form-field>
@@ -55,8 +71,13 @@ import { PlatformIngredient } from '@stockpot/shared';
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-stroked-button (click)="dialogRef.close()">Cancel</button>
-      <button mat-flat-button color="primary" (click)="save()"
-        [disabled]="form.invalid" data-test-id="admn-dialog-save-btn">
+      <button
+        mat-flat-button
+        color="primary"
+        (click)="save()"
+        [disabled]="form.invalid"
+        data-test-id="admn-dialog-save-btn"
+      >
         Save
       </button>
     </mat-dialog-actions>
@@ -112,7 +133,13 @@ export class IngredientsComponent implements OnInit {
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
 
-  readonly displayedColumns = ['name', 'category', 'defaultUnit', 'status', 'actions'];
+  readonly displayedColumns = [
+    'name',
+    'category',
+    'defaultUnit',
+    'status',
+    'actions',
+  ];
   showArchived = signal(false);
   ingredients = signal<IngredientRow[]>([]);
   isLoading = signal(true);
@@ -157,10 +184,14 @@ export class IngredientsComponent implements OnInit {
       this.catalogService
         .createIngredient(result)
         .then(() =>
-          this.snackBar.open('Ingredient created.', 'Dismiss', { duration: 3000 }),
+          this.snackBar.open('Ingredient created.', 'Dismiss', {
+            duration: 3000,
+          }),
         )
         .catch(() =>
-          this.snackBar.open('Failed to create ingredient.', 'Dismiss', { duration: 3000 }),
+          this.snackBar.open('Failed to create ingredient.', 'Dismiss', {
+            duration: 3000,
+          }),
         );
     });
   }
@@ -169,10 +200,14 @@ export class IngredientsComponent implements OnInit {
     this.catalogService
       .archiveIngredient(ingredient.id)
       .then(() =>
-        this.snackBar.open('Ingredient archived.', 'Dismiss', { duration: 3000 }),
+        this.snackBar.open('Ingredient archived.', 'Dismiss', {
+          duration: 3000,
+        }),
       )
       .catch(() =>
-        this.snackBar.open('Failed to archive ingredient.', 'Dismiss', { duration: 3000 }),
+        this.snackBar.open('Failed to archive ingredient.', 'Dismiss', {
+          duration: 3000,
+        }),
       );
   }
 }
