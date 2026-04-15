@@ -1,0 +1,30 @@
+{
+  "settings": [
+    {
+      "docId": "global",
+      "data": {
+        "appName": "StockPot",
+        "theme": "orange_theme",
+        "maintenanceMode": false,
+        "featureFlags": {
+          "enable_registration": true
+        }
+      }
+    }
+  ],
+  "users": [],
+  "restaurants": [
+    {
+      "docId": "demo-restaurant-001",
+      "data": {
+        "_schemaVersion": 1,
+        "name": "Demo Restaurant",
+        "planTier": "starter",
+        "timezone": "Asia/Manila",
+        "currency": "PHP",
+        "address": "123 Rizal Ave, Manila, Philippines",
+        "createdAt": "2026-04-13T00:00:00.000Z"
+      }
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "projects": {
+    "default": "stockpot"
+  },
+  "targets": {
+    "stockpot": {
+      "hosting": {
+        "admin": [
+          "stockpot-admin"
+        ],
+        "user-app": [
+          "stockpot-user"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

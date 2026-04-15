@@ -1,0 +1,47 @@
+<mat-toolbar class="topbar gap-10">
+
+  <!-- Hamburger Menu -->
+  <button mat-icon-button (click)="toggleMobileNav.emit()" class="d-flex justify-content-center"
+    data-test-id="header-menu-toggle">
+    <i-tabler name="menu-2" class="icon-20 d-flex"></i-tabler>
+  </button>
+
+  <!-- App Title -->
+  <span class="f-s-16 f-w-500 m-l-8" data-test-id="header-app-title">Novus App</span>
+
+  <span class="flex-1-auto"></span>
+
+  <!-- --------------------------------------------------------------- -->
+  <!-- Unauthenticated: Login icon -->
+  <!-- --------------------------------------------------------------- -->
+  @if (authStatus !== 'authenticated') {
+  <a mat-icon-button [routerLink]="['/authentication/login']" aria-label="Login" data-test-id="header-login-button">
+    <i-tabler name="user-circle" class="icon-24 d-flex"></i-tabler>
+  </a>
+  }
+
+  <!-- --------------------------------------------------------------- -->
+  <!-- Authenticated: Profile dropdown -->
+  <!-- --------------------------------------------------------------- -->
+  @if (authStatus === 'authenticated') {
+  <button mat-mini-fab [matMenuTriggerFor]="profilemenu" aria-label="Profile" data-test-id="header-user-menu-button">
+    @if (userPhotoURL) {
+    <img [src]="userPhotoURL" class="rounded-circle object-cover d-block" width="35" alt="Profile" />
+    } @else {
+    <span class="f-s-16 f-w-600">{{ userInitial }}</span>
+    }
+  </button>
+  <mat-menu #profilemenu="matMenu" class="cardWithShadow topbar-dd">
+    <button mat-menu-item [routerLink]="['/dashboard/profile']">
+      <mat-icon class="d-flex align-items-center"><i-tabler name="user" class="icon-18 d-flex"></i-tabler></mat-icon>
+      My Profile
+    </button>
+    <mat-divider></mat-divider>
+    <button mat-menu-item (click)="logout()" data-test-id="header-logout-button">
+      <mat-icon class="d-flex align-items-center"><i-tabler name="logout" class="icon-18 d-flex"></i-tabler></mat-icon>
+      Logout
+    </button>
+  </mat-menu>
+  }
+
+</mat-toolbar>

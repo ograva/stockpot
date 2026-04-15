@@ -1,0 +1,54 @@
+<div class="blank-layout-container justify-content-center align-items-center bg-light">
+  <div class="position-relative row w-100 h-100 bg-gredient justify-content-center">
+    <div class="col-lg-4 d-flex align-items-center">
+      <mat-card class="cardWithShadow boxed-auth">
+        <mat-card-content class="p-32">
+          <div class="text-center">
+            <a [routerLink]="['/dashboard']">
+              <img src="./assets/images/logos/dark-logo.svg" class="align-middle m-2" alt="logo" />
+            </a>
+          </div>
+
+          <div class="or-border m-t-30">sign in with email</div>
+
+          <form [formGroup]="form" (ngSubmit)="submit()" class="m-t-30" data-test-id="login-form">
+            <mat-label class="f-s-14 f-w-600 m-b-12 d-block">Email Address</mat-label>
+            <mat-form-field appearance="outline" class="w-100" color="primary">
+              <input matInput type="email" formControlName="email" data-test-id="login-email-input"
+                placeholder="you@example.com" />
+              @if (f['email'].touched && f['email'].hasError('required')) {
+              <mat-error>Email is required</mat-error>
+              } @else if (f['email'].touched && f['email'].hasError('email')) {
+              <mat-error>Enter a valid email</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-label class="f-s-14 f-w-600 m-b-12 d-block">Password</mat-label>
+            <mat-form-field appearance="outline" class="w-100" color="primary">
+              <input matInput type="password" formControlName="password" data-test-id="login-password-input"
+                placeholder="••••••••" />
+              @if (f['password'].touched && f['password'].hasError('required')) {
+              <mat-error>Password is required</mat-error>
+              }
+            </mat-form-field>
+
+            @if (errorMessage()) {
+            <mat-error class="d-block m-b-12" data-test-id="login-error-message">{{ errorMessage() }}</mat-error>
+            }
+
+            <button mat-flat-button color="primary" class="w-100" type="submit" data-test-id="login-submit-button"
+              [disabled]="isLoading()">
+              {{ isLoading() ? 'Signing in…' : 'Sign In' }}
+            </button>
+          </form>
+
+          <span class="d-block f-w-500 text-center m-t-24">New to Novus?
+            <a [routerLink]="['/authentication/register']" class="text-decoration-none text-primary f-w-500 f-s-14"
+              data-test-id="login-register-link">
+              Create an account</a>
+          </span>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>

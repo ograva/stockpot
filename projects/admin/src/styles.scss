@@ -1,0 +1,35 @@
+/* Tailwind CSS v4 - must be first */
+@import "tailwindcss";
+
+/*
+  Tailwind theme: sync color tokens with Material CSS custom properties.
+  This ensures Tailwind color utilities (e.g. text-primary, bg-secondary)
+  stay in sync with the active Material theme without duplication.
+*/
+@theme {
+  --color-primary: var(--mat-sys-primary);
+  --color-on-primary: var(--mat-sys-on-primary);
+  --color-secondary: var(--mat-sys-secondary);
+  --color-on-secondary: var(--mat-sys-on-secondary);
+  --color-surface: var(--mat-sys-surface);
+  --color-on-surface: var(--mat-sys-on-surface);
+  --color-error: var(--mat-sys-error);
+  --color-on-error: var(--mat-sys-on-error);
+  --color-warning: #fec90f;
+  --color-success: #00c292;
+
+  --font-sans: "DM Sans", sans-serif;
+  --radius-card: 7px;
+}
+
+/*
+  Disable Tailwind preflight on Material-controlled elements.
+  Material manages its own resets — let Tailwind handle layout only.
+*/
+@layer base {
+  html,
+  body {
+    height: 100%;
+    margin: 0;
+  }
+}

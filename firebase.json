@@ -1,0 +1,60 @@
+{
+  "hosting": [
+    {
+      "target": "admin",
+      "public": "dist/admin/browser",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    },
+    {
+      "target": "user-app",
+      "public": "dist/user-app/browser",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    }
+  ],
+  "functions": {
+    "source": "functions",
+    "codebase": "default",
+    "runtime": "nodejs22"
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "emulators": {
+    "auth": {
+      "port": 9098
+    },
+    "functions": {
+      "port": 5001
+    },
+    "firestore": {
+      "port": 8085
+    },
+    "storage": {
+      "port": 9199
+    },
+    "ui": {
+      "enabled": true,
+      "port": 8080
+    },
+    "hub": {
+      "port": 4500
+    },
+    "singleProjectMode": true
+  }
+}

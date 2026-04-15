@@ -1,0 +1,99 @@
+<!-- Unsaved changes banner -->
+@if (isDirty()) {
+<div class="m-b-16 p-12 bg-warning text-white d-flex align-items-center gap-8" data-test-id="settings-unsaved-banner">
+    <i-tabler name="alert-triangle" class="icon-18 d-flex"></i-tabler>
+    <span>You have unsaved changes.</span>
+</div>
+}
+
+<mat-card class="cardWithShadow" data-test-id="settings-page">
+    <mat-card-header class="p-24 p-b-0">
+        <mat-card-title>Site Settings</mat-card-title>
+        <mat-card-subtitle>Manage global configuration for the application</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content class="p-24">
+
+        @if (saveError()) {
+        <div class="m-b-16 text-error" data-test-id="settings-save-error">
+            {{ saveError() }}
+        </div>
+        }
+
+        <form [formGroup]="form" (ngSubmit)="save()" novalidate data-test-id="settings-form">
+
+            <!-- General Section -->
+            <h3 class="m-b-16 f-w-500">General</h3>
+
+            <!-- App Name -->
+            <mat-form-field appearance="outline" class="w-100 m-b-16">
+                <mat-label>App Name</mat-label>
+                <input matInput formControlName="appName" placeholder="Application name"
+                    data-test-id="settings-app-name-input" />
+                @if (form.get('appName')?.touched && form.get('appName')?.hasError('required')) {
+                <mat-error>App name is required.</mat-error>
+                }
+            </mat-form-field>
+
+            <!-- Theme -->
+            <mat-form-field appearance="outline" class="w-100 m-b-24">
+                <mat-label>Theme</mat-label>
+                <mat-select formControlName="theme" data-test-id="settings-theme-select">
+                    @for (opt of themeOptions; track opt.value) {
+                    <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                    }
+                </mat-select>
+            </mat-form-field>
+
+            <mat-divider class="m-b-24"></mat-divider>
+
+            <!-- System Section -->
+            <h3 class="m-b-16 f-w-500">System</h3>
+
+            <!-- Maintenance Mode -->
+            <div class="d-flex align-items-center m-b-16">
+                <div class="flex-fill">
+                    <p class="m-b-0 f-w-500">Maintenance Mode</p>
+                    <p class="m-b-0 text-muted f-s-12">Disable public access while performing updates.</p>
+                </div>
+                <mat-slide-toggle formControlName="maintenanceMode" color="primary"
+                    data-test-id="settings-maintenance-toggle"></mat-slide-toggle>
+            </div>
+
+            <mat-divider class="m-b-24"></mat-divider>
+
+            <!-- Feature Flags Section -->
+            <h3 class="m-b-16 f-w-500">Feature Flags</h3>
+
+            <!-- Enable Registration -->
+            <div class="d-flex align-items-center m-b-16">
+                <div class="flex-fill">
+                    <p class="m-b-0 f-w-500">Enable Registration</p>
+                    <p class="m-b-0 text-muted f-s-12">Allow new users to register through the public-facing app.</p>
+                </div>
+                <mat-slide-toggle formControlName="enable_registration" color="primary"
+                    data-test-id="settings-registration-toggle"></mat-slide-toggle>
+            </div>
+
+            <mat-divider class="m-b-24"></mat-divider>
+
+            <!-- Actions -->
+            <div class="d-flex gap-8">
+                <button mat-raised-button color="primary" type="submit" [disabled]="!isDirty() || isSaving()"
+                    data-test-id="settings-save-button">
+                    @if (isSaving()) {
+                    <mat-spinner diameter="20" class="d-inline-block"></mat-spinner>
+                    } @else {
+                    Save Settings
+                    }
+                </button>
+
+                <button mat-button type="button" [disabled]="!isDirty() || isSaving()"
+                    data-test-id="settings-reset-button" (click)="reset()">
+                    Reset
+                </button>
+            </div>
+
+        </form>
+    </mat-card-content>
+</mat-card>

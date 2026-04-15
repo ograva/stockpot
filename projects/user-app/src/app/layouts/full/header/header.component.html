@@ -1,0 +1,45 @@
+<mat-toolbar class="topbar gap-10">
+
+  <!-- Hamburger Menu -->
+  <button mat-icon-button (click)="toggleMobileNav.emit()" class="d-flex justify-content-center"
+    data-test-id="header-menu-toggle">
+    <i-tabler name="menu-2" class="icon-20 d-flex"></i-tabler>
+  </button>
+
+  <!-- App Title -->
+  <span class="f-s-16 f-w-500 m-l-8" data-test-id="header-app-title">Novus App</span>
+
+  <span class="flex-1-auto"></span>
+
+  <!-- --------------------------------------------------------------- -->
+  <!-- profile Dropdown -->
+  <!-- --------------------------------------------------------------- -->
+  <button mat-mini-fab [matMenuTriggerFor]="profilemenu" aria-label="Profile" data-test-id="header-profile-button">
+    <img [src]="avatarUrl()" class="rounded-circle object-cover d-block" width="35" alt="Profile avatar"
+      data-test-id="header-profile-avatar" />
+  </button>
+  <mat-menu #profilemenu="matMenu" class="cardWithShadow topbar-dd">
+    @if (displayName()) {
+    <div class="p-x-16 p-y-8" data-test-id="header-profile-name">
+      <span class="f-s-14 f-w-600">{{ displayName() }}</span>
+    </div>
+    <mat-divider></mat-divider>
+    }
+    <button mat-menu-item [routerLink]="['/dashboard/profile']">
+      <mat-icon class="d-flex align-items-center"><i-tabler name="user" class="icon-18 d-flex"></i-tabler></mat-icon>My
+      Profile
+    </button>
+    <button mat-menu-item>
+      <mat-icon class="d-flex align-items-center"><i-tabler name="mail" class="icon-18 d-flex"></i-tabler></mat-icon>My
+      Account
+    </button>
+    <button mat-menu-item>
+      <mat-icon class="d-flex align-items-center"><i-tabler name="list-check"
+          class="icon-18 d-flex"></i-tabler></mat-icon>My Task
+    </button>
+
+    <div class="p-x-12 m-t-12">
+      <a [routerLink]="['/authentication/login']" mat-stroked-button class="w-100">Logout</a>
+    </div>
+  </mat-menu>
+</mat-toolbar>

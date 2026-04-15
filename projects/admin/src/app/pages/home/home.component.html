@@ -1,0 +1,92 @@
+<div class="row">
+    <div class="col-12">
+        <mat-card class="cardWithShadow" data-test-id="home-welcome-card">
+            <mat-card-content class="p-24">
+
+                <div class="text-center" data-test-id="home-hero-section">
+                    <h1 class="m-b-12 f-w-600" data-test-id="home-title">Welcome to Novus App</h1>
+                    <p class="m-b-0 f-s-18 text-muted">
+                        An Angular 21 Admin Dashboard Template by <strong>Novus Apps</strong>
+                    </p>
+                </div>
+
+                <mat-divider class="m-y-32"></mat-divider>
+
+                <!-- Tech Stack -->
+                <div class="m-b-32" data-test-id="home-tech-stack">
+                    <h3 class="m-b-16 f-w-500">Technology Stack</h3>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="m-b-0">
+                                <li class="m-b-8"><strong>Angular 21</strong> — Signal-based change detection,
+                                    standalone components</li>
+                                <li class="m-b-8"><strong>Angular Material 21</strong> — MDC-based component library
+                                </li>
+                                <li class="m-b-8"><strong>Tailwind CSS 4+</strong> — Utility-first layout and bespoke
+                                    styling</li>
+                                <li class="m-b-8"><strong>TypeScript</strong> — Strict type-safe development</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="m-b-0">
+                                <li class="m-b-8"><strong>Firebase 11+</strong> — Auth, Firestore, Cloud Functions</li>
+                                <li class="m-b-8"><strong>Tabler Icons</strong> — Clean, consistent icon library</li>
+                                <li class="m-b-8"><strong>ApexCharts</strong> — Interactive dashboard charting</li>
+                                <li class="m-b-8"><strong>Playwright</strong> — E2E testing across both apps</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Key Features -->
+                <div class="m-b-32" data-test-id="home-key-features">
+                    <h3 class="m-b-16 f-w-500">Key Features</h3>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="m-b-0">
+                                <li class="m-b-8"><strong>Monorepo</strong> — Admin and User apps sharing one workspace
+                                </li>
+                                <li class="m-b-8"><strong>Signal-First State</strong> — Reactive UI without RxJS
+                                    boilerplate</li>
+                                <li class="m-b-8"><strong>Offline-First Data</strong> — LocalStorage → Firestore sync
+                                    via <code>DataShareService</code></li>
+                                <li class="m-b-8"><strong>Firebase Emulators</strong> — Zero-cost local development
+                                    environment</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="m-b-0">
+                                <li class="m-b-8"><strong>Responsive Layout</strong> — Desktop, Tablet, and Mobile
+                                    breakpoints</li>
+                                <li class="m-b-8"><strong>Route Guards</strong> — Auth-protected admin routes</li>
+                                <li class="m-b-8"><strong>Splash Sequence</strong> — Branded initialization flow</li>
+                                <li class="m-b-8"><strong>CI/CD Ready</strong> — GitHub Actions → Firebase Hosting</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Getting Started -->
+                <div class="m-b-32" data-test-id="home-getting-started">
+                    <h3 class="m-b-16 f-w-500">Getting Started</h3>
+                    <ul class="m-b-0">
+                        <li class="m-b-8">Add new pages by creating routes in <code>pages.routes.ts</code></li>
+                        <li class="m-b-8">Extend navigation in <code>sidebar-data.ts</code></li>
+                        <li class="m-b-8">Customize the theme in <code>src/assets/scss/</code></li>
+                        <li class="m-b-8">Configure Firebase in <code>environments/environment.local.ts</code></li>
+                    </ul>
+                </div>
+
+                <mat-divider class="m-b-24"></mat-divider>
+
+                <div class="d-flex align-items-center justify-content-between">
+                    <p class="text-muted f-s-14 m-0">Built with ❤️ by Novus Apps</p>
+                    <a mat-flat-button color="primary" routerLink="/dashboard" data-test-id="home-go-to-dashboard">
+                        Go to Dashboard
+                    </a>
+                </div>
+
+            </mat-card-content>
+        </mat-card>
+    </div>
+</div>

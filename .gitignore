@@ -1,0 +1,60 @@
+# See http://help.github.com/ignore-files/ for more about ignoring files.
+
+# Compiled output
+/dist
+/tmp
+/out-tsc
+/bazel-out
+
+# Node
+/node_modules
+npm-debug.log
+yarn-error.log
+
+# IDEs and editors
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/*
+
+# Miscellaneous
+/.angular/cache
+.sass-cache/
+/connect.lock
+/coverage
+/libpeerconnection.log
+testem.log
+/typings
+
+# Testing
+/test-results/
+/playwright-report/
+/.playwright/
+
+# Firebase
+.firebase/
+*-debug.log
+*-debug.*.log
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+functions/lib/
+functions/node_modules/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Firebase emulator exported data (local seed — commit only if intentional)
+# emulator-data/

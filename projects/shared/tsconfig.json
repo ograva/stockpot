@@ -1,0 +1,8 @@
+/* TypeScript config for the shared library project.
+   Extends the root workspace tsconfig and sets baseUrl to this project's root. */
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "./"
+  }
+}

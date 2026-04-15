@@ -1,0 +1,13 @@
+/* Test config for the shared library project.
+   Runs all spec files under src/ using Karma + Jasmine. */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../out-tsc/spec",
+    "types": ["jasmine"]
+  },
+  "include": [
+    "src/**/*.spec.ts",
+    "src/**/*.d.ts"
+  ]
+}

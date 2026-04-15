@@ -1,0 +1,83 @@
+{
+  "name": "Flexy Angular Workspace",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:22-bookworm",
+
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "21",
+      "installMaven": false,
+      "installGradle": false
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "angular.ng-template",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "github.copilot",
+        "github.copilot-chat",
+        "automatalabs.copilot-mcp",
+        "ms-edgedevtools.vscode-edge-devtools",
+        "ms-vscode.vscode-typescript-next",
+        "christian-kohler.path-intellisense",
+        "PKief.material-icon-theme",
+        "toba.vsfire",
+        "ms-playwright.playwright"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "typescript.tsdk": "node_modules/typescript/lib"
+      }
+    }
+  },
+
+  // Install global tools on container creation
+  // - npm@latest: Keep package manager updated for security and performance
+  // - @angular/cli@latest: Angular CLI available globally (before npm install runs)
+  // firebase-tools is version-pinned in package.json devDependencies; use 'npx firebase'
+  // Pre-download Firebase emulator JARs so first 'npm run dev' doesn't trigger a download
+  "onCreateCommand": "npm install -g npm@latest @angular/cli@latest && npm install && npx firebase setup:emulators:firestore && npx firebase setup:emulators:storage",
+  "updateContentCommand": "npm install",
+
+  "forwardPorts": [4200, 4400, 9098, 8080, 5001, 9199, 8085],
+
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "16gb",
+    "storage": "32gb"
+  },
+  "portsAttributes": {
+    "4200": {
+      "label": "Admin App",
+      "onAutoForward": "notify"
+    },
+    "4400": {
+      "label": "User App",
+      "onAutoForward": "notify"
+    },
+    "9098": {
+      "label": "Firebase Auth Emulator",
+      "onAutoForward": "silent"
+    },
+    "8080": {
+      "label": "Firebase Emulator UI",
+      "onAutoForward": "notify"
+    },
+    "5001": {
+      "label": "Firebase Functions",
+      "onAutoForward": "silent"
+    },
+    "9199": {
+      "label": "Firebase Storage",
+      "onAutoForward": "silent"
+    },
+    "8085": {
+      "label": "Firebase Firestore",
+      "onAutoForward": "silent"
+    }
+  }
+}

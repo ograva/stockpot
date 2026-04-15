@@ -1,0 +1,97 @@
+<mat-card class="cardWithShadow" data-test-id="user-form-page">
+    <mat-card-header class="p-24 p-b-0">
+        <mat-card-title>{{ isEditMode() ? 'Edit User' : 'New User' }}</mat-card-title>
+        <mat-card-subtitle>{{ isEditMode() ? 'Update user details' : 'Create a new user account' }}</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content class="p-24">
+
+        @if (errorMessage()) {
+        <div class="m-b-16 text-error" data-test-id="user-form-error-message">
+            {{ errorMessage() }}
+        </div>
+        }
+
+        <form [formGroup]="form" (ngSubmit)="submit()" novalidate data-test-id="user-form">
+
+            <!-- Name -->
+            <mat-form-field appearance="outline" class="w-100 m-b-16">
+                <mat-label>Name</mat-label>
+                <input matInput formControlName="name" placeholder="Full name" data-test-id="user-form-name-input" />
+                @if (f['name'].touched && f['name'].hasError('required')) {
+                <mat-error>Name is required.</mat-error>
+                }
+                @if (f['name'].touched && f['name'].hasError('minlength')) {
+                <mat-error>Name must be at least 2 characters.</mat-error>
+                }
+            </mat-form-field>
+
+            <!-- Email -->
+            <mat-form-field appearance="outline" class="w-100 m-b-16">
+                <mat-label>Email</mat-label>
+                <input matInput formControlName="email" placeholder="Email address" type="email"
+                    [readonly]="isEditMode()" data-test-id="user-form-email-input" />
+                @if (f['email'].touched && f['email'].hasError('required')) {
+                <mat-error>Email is required.</mat-error>
+                }
+                @if (f['email'].touched && f['email'].hasError('email')) {
+                <mat-error>Enter a valid email address.</mat-error>
+                }
+            </mat-form-field>
+
+            <!-- Password (create mode only) -->
+            @if (!isEditMode()) {
+            <mat-form-field appearance="outline" class="w-100 m-b-16">
+                <mat-label>Password</mat-label>
+                <input matInput formControlName="password" placeholder="Password" type="password"
+                    data-test-id="user-form-password-input" />
+                @if (f['password'].touched && f['password'].hasError('required')) {
+                <mat-error>Password is required.</mat-error>
+                }
+                @if (f['password'].touched && f['password'].hasError('minlength')) {
+                <mat-error>Password must be at least 6 characters.</mat-error>
+                }
+            </mat-form-field>
+            }
+
+            <!-- Role -->
+            <mat-form-field appearance="outline" class="w-100 m-b-24">
+                <mat-label>Role</mat-label>
+                <mat-select formControlName="role" data-test-id="user-form-role-select">
+                    <mat-option value="user">User</mat-option>
+                    <mat-option value="admin">Admin</mat-option>
+                </mat-select>
+                @if (f['role'].touched && f['role'].hasError('required')) {
+                <mat-error>Role is required.</mat-error>
+                }
+            </mat-form-field>
+
+            <!-- Actions -->
+            <div class="d-flex gap-8">
+                <button mat-raised-button color="primary" type="submit" [disabled]="isLoading()"
+                    data-test-id="user-form-save-button">
+                    @if (isLoading()) {
+                    <mat-spinner diameter="20" class="d-inline-block"></mat-spinner>
+                    } @else {
+                    {{ isEditMode() ? 'Save Changes' : 'Create User' }}
+                    }
+                </button>
+
+                <button mat-button type="button" [disabled]="isLoading()" data-test-id="user-form-cancel-button"
+                    (click)="cancel()">
+                    Cancel
+                </button>
+
+                @if (isEditMode()) {
+                <span class="flex-fill"></span>
+                <button mat-raised-button color="warn" type="button" [disabled]="isLoading()"
+                    data-test-id="user-form-delete-button" (click)="confirmDelete()">
+                    <i-tabler name="trash" class="icon-18 d-flex"></i-tabler>
+                    Delete User
+                </button>
+                }
+            </div>
+
+        </form>
+    </mat-card-content>
+</mat-card>

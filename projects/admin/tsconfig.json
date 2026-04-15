@@ -1,0 +1,8 @@
+/* Angular workspace project-level TypeScript config for admin.
+   Sets baseUrl so that 'src/app/...' imports resolve correctly from this project root. */
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "./"
+  }
+}

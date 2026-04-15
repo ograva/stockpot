@@ -1,0 +1,87 @@
+name: Deploy to Firebase Hosting
+
+on:
+  workflow_dispatch: # Allow manual trigger from GitHub Actions UI
+  workflow_run:
+    # Auto-deploy only after E2E tests complete successfully on main
+    workflows: ["E2E Tests"]
+    types: [completed]
+    branches: [main]
+
+# Only one deployment runs at a time; queues the next one
+concurrency:
+  group: firebase-deploy
+  cancel-in-progress: false
+
+jobs:
+  # ─────────────────────────────────────────────────────────────
+  # Guard: skip entire workflow if Firebase is not yet configured
+  # Set FIREBASE_TOKEN or use Workload Identity + FIREBASE_PROJECT_ID
+  # ─────────────────────────────────────────────────────────────
+  check-config:
+    name: Check Firebase config
+    runs-on: ubuntu-latest
+    # Skip if triggered by a failed E2E workflow run
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    outputs:
+      configured: ${{ steps.check.outputs.configured }}
+    steps:
+      - name: Detect Firebase secrets
+        id: check
+        run: |
+          if [[ -n "${{ secrets.FIREBASE_TOKEN }}" && -n "${{ secrets.FIREBASE_API_KEY }}" ]]; then
+            echo "configured=true" >> $GITHUB_OUTPUT
+          else
+            echo "configured=false" >> $GITHUB_OUTPUT
+            echo "⚠️  Firebase secrets not configured — skipping deployment."
+            echo "Add FIREBASE_TOKEN and FIREBASE_API_KEY to your repository secrets to enable deployment."
+          fi
+
+  # ─────────────────────────────────────────────────────────────
+  # Build & Deploy
+  # ─────────────────────────────────────────────────────────────
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    needs: check-config
+    if: needs.check-config.outputs.configured == 'true'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Inject production Firebase config from GitHub Secrets into environment.prod.ts
+      - name: Write production environment file
+        run: node scripts/write-env.mjs
+        env:
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+          FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+
+      - name: Build Admin app
+        run: npm run build:admin
+
+      - name: Build User app
+        run: npm run build:user
+
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
+          channelId: live

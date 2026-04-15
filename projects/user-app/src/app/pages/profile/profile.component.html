@@ -1,0 +1,88 @@
+<mat-card class="cardWithShadow" data-test-id="profile-page">
+    <mat-card-header class="p-24 p-b-0">
+        <mat-card-title>
+            @if (isOnboarding()) {
+            Complete your profile
+            } @else {
+            My Profile
+            }
+        </mat-card-title>
+        <mat-card-subtitle>
+            @if (isOnboarding()) {
+            Tell us a little about yourself before getting started.
+            } @else {
+            Update your personal information
+            }
+        </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content class="p-24">
+
+        @if (errorMessage()) {
+        <div class="m-b-16 text-error" data-test-id="profile-error-message">
+            {{ errorMessage() }}
+        </div>
+        }
+
+        <!-- Email (read-only) -->
+        <mat-form-field appearance="outline" class="w-100 m-b-16">
+            <mat-label>Email</mat-label>
+            <input matInput [value]="email" readonly data-test-id="profile-email-input" />
+            <mat-hint>Email cannot be changed here.</mat-hint>
+        </mat-form-field>
+
+        <!-- Role (read-only badge) -->
+        <div class="m-b-16">
+            <span class="text-muted f-s-12 m-r-8">Role:</span>
+            <mat-chip [highlighted]="true" data-test-id="profile-role-badge">
+                {{ role }}
+            </mat-chip>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="save()" novalidate data-test-id="profile-form">
+
+            <!-- Display Name -->
+            <mat-form-field appearance="outline" class="w-100 m-b-16">
+                <mat-label>Display Name</mat-label>
+                <input matInput formControlName="displayName" placeholder="Your name"
+                    [attr.data-test-id]="isOnboarding() ? 'onboarding-name-input' : 'profile-name-input'" />
+                @if (f['displayName'].touched && f['displayName'].hasError('required')) {
+                <mat-error>Display name is required.</mat-error>
+                }
+                @if (f['displayName'].touched && f['displayName'].hasError('minlength')) {
+                <mat-error>Must be at least 2 characters.</mat-error>
+                }
+            </mat-form-field>
+
+            <!-- Photo URL -->
+            @if (!isOnboarding()) {
+            <mat-form-field appearance="outline" class="w-100 m-b-24">
+                <mat-label>Photo URL</mat-label>
+                <input matInput formControlName="photoURL" placeholder="https://..." type="url"
+                    data-test-id="profile-photo-url-input" />
+            </mat-form-field>
+            }
+
+            <!-- Actions -->
+            <div class="d-flex gap-8">
+                <button mat-raised-button color="primary" type="submit" [disabled]="isSaving()"
+                    [attr.data-test-id]="isOnboarding() ? 'onboarding-submit-button' : 'profile-save-button'">
+                    @if (isSaving()) {
+                    <mat-spinner diameter="20" class="d-inline-block"></mat-spinner>
+                    } @else if (isOnboarding()) {
+                    Get Started
+                    } @else {
+                    Save Changes
+                    }
+                </button>
+
+                @if (!isOnboarding()) {
+                <a mat-button [routerLink]="['/dashboard/home']" data-test-id="profile-back-button">
+                    Back to Home
+                </a>
+                }
+            </div>
+
+        </form>
+    </mat-card-content>
+</mat-card>
