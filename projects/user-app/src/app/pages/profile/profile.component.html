@@ -1,88 +1,100 @@
-<mat-card class="cardWithShadow" data-test-id="profile-page">
-    <mat-card-header class="p-24 p-b-0">
-        <mat-card-title>
-            @if (isOnboarding()) {
-            Complete your profile
-            } @else {
-            My Profile
-            }
-        </mat-card-title>
-        <mat-card-subtitle>
-            @if (isOnboarding()) {
-            Tell us a little about yourself before getting started.
-            } @else {
-            Update your personal information
-            }
-        </mat-card-subtitle>
-    </mat-card-header>
+<div class="row" data-test-id="profile-page">
 
-    <mat-card-content class="p-24">
+  <!-- ── Profile Section ── -->
+  <div class="col-12 col-md-6">
+    <mat-card class="cardWithShadow">
+      <mat-card-header class="p-24 p-b-0">
+        <mat-card-title>My Profile</mat-card-title>
+        <mat-card-subtitle>Update your display name</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content class="p-24">
 
-        @if (errorMessage()) {
-        <div class="m-b-16 text-error" data-test-id="profile-error-message">
-            {{ errorMessage() }}
-        </div>
-        }
-
-        <!-- Email (read-only) -->
+        <!-- Read-only info -->
         <mat-form-field appearance="outline" class="w-100 m-b-16">
-            <mat-label>Email</mat-label>
-            <input matInput [value]="email" readonly data-test-id="profile-email-input" />
-            <mat-hint>Email cannot be changed here.</mat-hint>
+          <mat-label>Email</mat-label>
+          <input matInput [value]="email" readonly data-test-id="profile-email-input" />
+          <mat-hint>Email cannot be changed here.</mat-hint>
         </mat-form-field>
 
-        <!-- Role (read-only badge) -->
-        <div class="m-b-16">
-            <span class="text-muted f-s-12 m-r-8">Role:</span>
-            <mat-chip [highlighted]="true" data-test-id="profile-role-badge">
-                {{ role }}
-            </mat-chip>
+        <div class="d-flex align-items-center gap-8 m-b-16">
+          <span class="text-muted f-s-12">Role:</span>
+          <mat-chip data-test-id="profile-role-badge">{{ role }}</mat-chip>
         </div>
 
-        <form [formGroup]="form" (ngSubmit)="save()" novalidate data-test-id="profile-form">
-
-            <!-- Display Name -->
-            <mat-form-field appearance="outline" class="w-100 m-b-16">
-                <mat-label>Display Name</mat-label>
-                <input matInput formControlName="displayName" placeholder="Your name"
-                    [attr.data-test-id]="isOnboarding() ? 'onboarding-name-input' : 'profile-name-input'" />
-                @if (f['displayName'].touched && f['displayName'].hasError('required')) {
-                <mat-error>Display name is required.</mat-error>
-                }
-                @if (f['displayName'].touched && f['displayName'].hasError('minlength')) {
-                <mat-error>Must be at least 2 characters.</mat-error>
-                }
-            </mat-form-field>
-
-            <!-- Photo URL -->
-            @if (!isOnboarding()) {
-            <mat-form-field appearance="outline" class="w-100 m-b-24">
-                <mat-label>Photo URL</mat-label>
-                <input matInput formControlName="photoURL" placeholder="https://..." type="url"
-                    data-test-id="profile-photo-url-input" />
-            </mat-form-field>
+        <!-- Display Name form -->
+        <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" novalidate data-test-id="profile-form">
+          <mat-form-field appearance="outline" class="w-100 m-b-16">
+            <mat-label>Display Name</mat-label>
+            <input matInput formControlName="displayName" placeholder="Your name"
+              data-test-id="profile-name-input" />
+            @if (pf['displayName'].touched && pf['displayName'].hasError('required')) {
+              <mat-error>Display name is required.</mat-error>
             }
+            @if (pf['displayName'].touched && pf['displayName'].hasError('minlength')) {
+              <mat-error>Must be at least 2 characters.</mat-error>
+            }
+          </mat-form-field>
 
-            <!-- Actions -->
-            <div class="d-flex gap-8">
-                <button mat-raised-button color="primary" type="submit" [disabled]="isSaving()"
-                    [attr.data-test-id]="isOnboarding() ? 'onboarding-submit-button' : 'profile-save-button'">
-                    @if (isSaving()) {
-                    <mat-spinner diameter="20" class="d-inline-block"></mat-spinner>
-                    } @else if (isOnboarding()) {
-                    Get Started
-                    } @else {
-                    Save Changes
-                    }
-                </button>
+          @if (profileError()) {
+            <mat-error class="m-b-16" data-test-id="profile-error-message">{{ profileError() }}</mat-error>
+          }
 
-                @if (!isOnboarding()) {
-                <a mat-button [routerLink]="['/dashboard/home']" data-test-id="profile-back-button">
-                    Back to Home
-                </a>
-                }
-            </div>
-
+          <button mat-flat-button color="primary" type="submit"
+            [disabled]="isSavingProfile()"
+            data-test-id="profile-save-button">
+            {{ isSavingProfile() ? 'Saving…' : 'Save Changes' }}
+          </button>
         </form>
-    </mat-card-content>
-</mat-card>
+
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- ── Password Section ── -->
+  <div class="col-12 col-md-6">
+    <mat-card class="cardWithShadow">
+      <mat-card-header class="p-24 p-b-0">
+        <mat-card-title>Change Password</mat-card-title>
+        <mat-card-subtitle>You must confirm your current password to set a new one</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content class="p-24">
+
+        <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" novalidate
+          data-test-id="password-change-form">
+          <mat-form-field appearance="outline" class="w-100 m-b-16">
+            <mat-label>Current Password</mat-label>
+            <input matInput type="password" formControlName="currentPassword"
+              data-test-id="profile-current-password-input" />
+            @if (pwf['currentPassword'].touched && pwf['currentPassword'].hasError('required')) {
+              <mat-error>Current password is required.</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="w-100 m-b-16">
+            <mat-label>New Password</mat-label>
+            <input matInput type="password" formControlName="newPassword"
+              data-test-id="profile-new-password-input" />
+            @if (pwf['newPassword'].touched && pwf['newPassword'].hasError('required')) {
+              <mat-error>New password is required.</mat-error>
+            }
+            @if (pwf['newPassword'].touched && pwf['newPassword'].hasError('minlength')) {
+              <mat-error>Password must be at least 8 characters.</mat-error>
+            }
+          </mat-form-field>
+
+          @if (passwordError()) {
+            <mat-error class="m-b-16" data-test-id="password-error-message">{{ passwordError() }}</mat-error>
+          }
+
+          <button mat-flat-button color="warn" type="submit"
+            [disabled]="isChangingPassword()"
+            data-test-id="profile-change-password-button">
+            {{ isChangingPassword() ? 'Changing…' : 'Change Password' }}
+          </button>
+        </form>
+
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+</div>

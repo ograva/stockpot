@@ -3,6 +3,7 @@ import { BlankComponent } from './layouts/blank/blank.component';
 import { FullComponent } from './layouts/full/full.component';
 import { SplashComponent } from './pages/splash/splash.component';
 import { UnauthorizedComponent } from './pages/unauthorized/unauthorized.component';
+import { ProfileComponent } from './pages/profile/profile.component';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -20,6 +21,15 @@ export const routes: Routes = [
         path: 'dashboard',
         loadChildren: () =>
           import('./pages/pages.routes').then((m) => m.PagesRoutes),
+      },
+      {
+        path: 'settings',
+        children: [
+          {
+            path: 'profile',
+            component: ProfileComponent,
+          },
+        ],
       },
     ],
   },

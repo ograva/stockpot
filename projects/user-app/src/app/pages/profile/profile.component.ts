@@ -1,62 +1,61 @@
-import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
   FormGroup,
   FormControl,
   Validators,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { Auth, updateProfile } from '@angular/fire/auth';
-import { Firestore, doc, getDoc } from '@angular/fire/firestore';
+import {
+  Auth,
+  updateProfile,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+} from '@angular/fire/auth';
+import { Firestore, doc, setDoc } from '@angular/fire/firestore';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MaterialModule } from '../../material.module';
-import { TablerIconsModule } from 'angular-tabler-icons';
 import { CoreService } from '../../services/core.service';
-import { StoreForwardService } from '../../services/store-forward.service';
-import {
-  UserProfileDoc,
-  USER_PROFILE_SCHEMA_VERSION,
-  serializeUserProfile,
-  deserializeUserProfile,
-} from '@stockpot/shared';
-
-const PROFILE_KEY = 'user_profile';
+import { AppUser, serializeAppUser } from '@stockpot/shared';
 
 @Component({
   selector: 'app-profile',
-  imports: [
-    CommonModule,
-    MaterialModule,
-    ReactiveFormsModule,
-    TablerIconsModule,
-    RouterModule,
-  ],
+  imports: [CommonModule, MaterialModule, ReactiveFormsModule],
   templateUrl: './profile.component.html',
 })
-export class ProfileComponent implements OnInit, OnDestroy {
+export class ProfileComponent implements OnInit {
   private auth = inject(Auth);
   private firestore = inject(Firestore);
-  private router = inject(Router);
-  private route = inject(ActivatedRoute);
   private core = inject(CoreService);
-  private storeForward = inject(StoreForwardService);
   private snackBar = inject(MatSnackBar);
 
-  readonly isOnboarding = signal(false);
-  readonly isSaving = signal(false);
-  readonly errorMessage = signal<string | null>(null);
+  readonly isSavingProfile = signal(false);
+  readonly isChangingPassword = signal(false);
+  readonly profileError = signal<string | null>(null);
+  readonly passwordError = signal<string | null>(null);
 
-  form = new FormGroup({
+  profileForm = new FormGroup({
     displayName: new FormControl('', [
       Validators.required,
       Validators.minLength(2),
     ]),
-    photoURL: new FormControl(''),
   });
 
-  get f() {
-    return this.form.controls;
+  passwordForm = new FormGroup({
+    currentPassword: new FormControl('', [Validators.required]),
+    newPassword: new FormControl('', [
+      Validators.required,
+      Validators.minLength(8),
+    ]),
+  });
+
+  get pf() {
+    return this.profileForm.controls;
+  }
+
+  get pwf() {
+    return this.passwordForm.controls;
   }
 
   get email(): string {
@@ -64,105 +63,93 @@ export class ProfileComponent implements OnInit, OnDestroy {
   }
 
   get role(): string {
-    const cached = this.storeForward.get<UserProfileDoc>(PROFILE_KEY)();
-    return cached?.role ?? 'user';
+    return this.core.appUser()?.role ?? '';
   }
 
-  async ngOnInit(): Promise<void> {
-    const onboarding = this.route.snapshot.queryParamMap.get('onboarding');
-    this.isOnboarding.set(onboarding === 'true');
-
-    // Make DisplayName required in onboarding mode (already is required by default)
-    const user = this.core.currentUser();
-    if (!user) return;
-
-    // Sync Firestore profile (deserialize normalises schema version + defaults)
-    const docRef = doc(this.firestore, 'users', user.uid);
-    this.storeForward.sync<UserProfileDoc>(PROFILE_KEY, `users/${user.uid}`, {
-      deserialize: deserializeUserProfile,
+  ngOnInit(): void {
+    // Populate form from CoreService signal — no direct Firestore read needed
+    const appUser = this.core.appUser();
+    this.profileForm.patchValue({
+      displayName: appUser?.name || this.core.currentUser()?.displayName || '',
     });
-
-    // Try cache first for fast paint, then fall back to a direct Firestore read
-    const cached = this.storeForward.get<UserProfileDoc>(PROFILE_KEY)();
-    if (cached) {
-      this.form.patchValue({
-        displayName: cached.name || user.displayName || '',
-        photoURL: cached.photoURL ?? user.photoURL ?? '',
-      });
-    } else {
-      try {
-        const snap = await getDoc(docRef);
-        const profile = deserializeUserProfile(snap.data());
-        this.form.patchValue({
-          displayName: profile.name || user.displayName || '',
-          photoURL: profile.photoURL ?? user.photoURL ?? '',
-        });
-      } catch {
-        // Fall back to Auth user values
-        this.form.patchValue({
-          displayName: user.displayName ?? '',
-          photoURL: user.photoURL ?? '',
-        });
-      }
-    }
   }
 
-  ngOnDestroy(): void {
-    this.storeForward.unsync(PROFILE_KEY);
-  }
-
-  async save(): Promise<void> {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
+  async saveProfile(): Promise<void> {
+    if (this.profileForm.invalid) {
+      this.profileForm.markAllAsTouched();
       return;
     }
-
     const user = this.core.currentUser();
-    if (!user) return;
+    const appUser = this.core.appUser();
+    if (!user || !appUser) return;
 
-    this.isSaving.set(true);
-    this.errorMessage.set(null);
-
+    this.profileError.set(null);
+    this.isSavingProfile.set(true);
     try {
-      const { displayName, photoURL } = this.form.getRawValue();
-      const name = displayName!;
-      // Use undefined (not null) — serializeUserProfile omits undefined optionals
-      const photo = photoURL || undefined;
+      const newName = this.pf['displayName'].value!;
 
-      // Update Firebase Auth profile — only pass photoURL when it has a value;
-      // the Auth API rejects null (only strings are valid for photoURL).
-      await updateProfile(user, {
-        displayName: name,
-        ...(photo !== undefined ? { photoURL: photo } : {}),
-      });
-      // Immediately refresh the CoreService signal so the header reflects
-      // the new displayName/photoURL without waiting for a new auth event.
+      // 1. Update Firebase Auth displayName
+      await updateProfile(user, { displayName: newName });
       this.core.refreshCurrentUser();
 
-      // Build typed document — serialize() strips undefineds before Firestore write
-      const profileDoc: UserProfileDoc = {
-        _schemaVersion: USER_PROFILE_SCHEMA_VERSION,
-        name,
-        email: user.email ?? '',
-        role: this.role,
-        ...(photo ? { photoURL: photo } : {}),
-      };
+      // 2. Write updated AppUserDoc to Firestore
+      const updatedAppUser: AppUser = { ...appUser, name: newName };
+      await setDoc(
+        doc(
+          this.firestore,
+          `restaurants/${appUser.restaurantId}/users/${user.uid}`,
+        ),
+        serializeAppUser(updatedAppUser),
+        { merge: true },
+      );
 
-      // Store-and-Forward: write locally + serialized payload to Firestore
-      this.storeForward.set(PROFILE_KEY, profileDoc, `users/${user.uid}`, {
-        serialize: serializeUserProfile,
-        deserialize: deserializeUserProfile,
-      });
+      // 3. Reflect change immediately in CoreService signal
+      this.core.setAppUser(updatedAppUser);
 
-      this.snackBar.open('Profile saved.', 'Dismiss', { duration: 4000 });
-
-      if (this.isOnboarding()) {
-        this.router.navigate(['/dashboard/home']);
-      }
+      this.snackBar.open('Profile updated.', 'Dismiss', { duration: 3000 });
     } catch {
-      this.errorMessage.set('Failed to save profile. Please try again.');
+      this.profileError.set('Failed to update profile. Please try again.');
     } finally {
-      this.isSaving.set(false);
+      this.isSavingProfile.set(false);
+    }
+  }
+
+  async changePassword(): Promise<void> {
+    if (this.passwordForm.invalid) {
+      this.passwordForm.markAllAsTouched();
+      return;
+    }
+    const user = this.core.currentUser();
+    if (!user || !user.email) return;
+
+    this.passwordError.set(null);
+    this.isChangingPassword.set(true);
+    try {
+      const { currentPassword, newPassword } = this.passwordForm.getRawValue();
+
+      // Firebase requires recent login before password change — re-auth first
+      const credential = EmailAuthProvider.credential(
+        user.email,
+        currentPassword!,
+      );
+      await reauthenticateWithCredential(user, credential);
+      await updatePassword(user, newPassword!);
+
+      this.passwordForm.reset();
+      this.snackBar.open('Password changed successfully.', 'Dismiss', {
+        duration: 3000,
+      });
+    } catch (err: any) {
+      if (
+        err?.code === 'auth/wrong-password' ||
+        err?.code === 'auth/invalid-credential'
+      ) {
+        this.passwordError.set('Incorrect current password.');
+      } else {
+        this.passwordError.set('Failed to change password. Please try again.');
+      }
+    } finally {
+      this.isChangingPassword.set(false);
     }
   }
 }
