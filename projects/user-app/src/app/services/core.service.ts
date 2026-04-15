@@ -1,11 +1,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { AppSettings, defaults } from '../config';
 import { Auth, User } from '@angular/fire/auth';
-import {
-  Firestore,
-  doc,
-  getDoc,
-} from '@angular/fire/firestore';
+import { Firestore, doc, getDoc } from '@angular/fire/firestore';
 import { AppUser, deserializeAppUser } from '@stockpot/shared';
 
 export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
@@ -48,13 +44,18 @@ export class CoreService {
   async loadAppUser(user: User): Promise<void> {
     try {
       const tokenResult = await user.getIdTokenResult(false);
-      const restaurantId = tokenResult.claims['restaurantId'] as string | undefined;
+      const restaurantId = tokenResult.claims['restaurantId'] as
+        | string
+        | undefined;
       if (!restaurantId) {
         // No restaurant claim — setup wizard (AUTH-003) not yet completed.
         this._appUser.set(null);
         return;
       }
-      const userDoc = doc(this.firestore, `restaurants/${restaurantId}/users/${user.uid}`);
+      const userDoc = doc(
+        this.firestore,
+        `restaurants/${restaurantId}/users/${user.uid}`,
+      );
       const snap = await getDoc(userDoc);
       this._appUser.set(snap.exists() ? deserializeAppUser(snap.data()) : null);
     } catch {

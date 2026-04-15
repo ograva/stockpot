@@ -43,10 +43,16 @@ export class AppComponent implements OnDestroy {
       if (user) {
         // User just signed in — redirect away from auth pages
         if (url.startsWith('/authentication') || url === '/') {
-          const role = this.core.appUser()?.role;
-          // staff goes straight to kitchen; everyone else to dashboard
-          const destination = role === 'staff' ? '/kitchen' : '/dashboard';
-          this.router.navigate([destination]);
+          const appUser = this.core.appUser();
+          if (!appUser) {
+            // No restaurant set up yet — send to first-run wizard
+            this.router.navigate(['/authentication/setup']);
+          } else {
+            const role = appUser.role;
+            // staff goes straight to kitchen; everyone else to dashboard
+            const destination = role === 'staff' ? '/kitchen' : '/dashboard';
+            this.router.navigate([destination]);
+          }
         }
       } else {
         // User signed out or token expired — redirect away from protected routes

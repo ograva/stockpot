@@ -1,0 +1,120 @@
+<div class="blank-layout-container justify-content-center align-items-center bg-light" data-test-id="auth-setup-wizard">
+    <div class="position-relative row w-100 h-100 justify-content-center align-items-center">
+        <div class="col-lg-6 col-md-8 col-12 p-32">
+
+            <mat-card class="cardWithShadow">
+                <mat-card-header class="p-24 pb-0">
+                    <div class="d-flex align-items-center gap-16">
+                        <img src="/assets/images/logos/dark-logo.svg" height="40" alt="StockPot" />
+                        <div>
+                            <mat-card-title class="f-s-20 f-w-600">Welcome to StockPot!</mat-card-title>
+                            <mat-card-subtitle>Set up your restaurant in a few steps</mat-card-subtitle>
+                        </div>
+                    </div>
+                </mat-card-header>
+
+                <mat-card-content class="p-24">
+                    <mat-stepper orientation="horizontal" linear #stepper>
+
+                        <!-- ── Step 1: Restaurant Profile ── -->
+                        <mat-step [stepControl]="profileForm" label="Restaurant Profile">
+                            <form [formGroup]="profileForm" class="d-flex flex-column gap-16 m-t-16">
+
+                                <mat-form-field appearance="outline" class="w-100">
+                                    <mat-label>Restaurant Name *</mat-label>
+                                    <input matInput formControlName="name" data-test-id="auth-setup-name-input"
+                                        placeholder="e.g. Jollibee Makati" />
+                                    @if (pf['name'].touched && pf['name'].hasError('required')) {
+                                    <mat-error>Restaurant name is required</mat-error>
+                                    }
+                                </mat-form-field>
+
+                                <mat-form-field appearance="outline" class="w-100">
+                                    <mat-label>Currency</mat-label>
+                                    <mat-select formControlName="currency">
+                                        <mat-option value="PHP">PHP — Philippine Peso</mat-option>
+                                        <mat-option value="USD">USD — US Dollar</mat-option>
+                                        <mat-option value="SGD">SGD — Singapore Dollar</mat-option>
+                                    </mat-select>
+                                </mat-form-field>
+
+                                <mat-form-field appearance="outline" class="w-100">
+                                    <mat-label>Timezone</mat-label>
+                                    <mat-select formControlName="timezone">
+                                        <mat-option value="Asia/Manila">Asia/Manila (PHT)</mat-option>
+                                        <mat-option value="Asia/Singapore">Asia/Singapore (SGT)</mat-option>
+                                        <mat-option value="Asia/Bangkok">Asia/Bangkok (ICT)</mat-option>
+                                    </mat-select>
+                                </mat-form-field>
+
+                                <div class="d-flex justify-content-end m-t-8">
+                                    <button mat-flat-button color="primary" matStepperNext
+                                        [disabled]="profileForm.invalid" data-test-id="auth-setup-next-btn">
+                                        Next Step
+                                    </button>
+                                </div>
+                            </form>
+                        </mat-step>
+
+                        <!-- ── Step 2: Team Invites (optional) ── -->
+                        <mat-step [stepControl]="teamForm" label="Team Invites">
+                            <form [formGroup]="teamForm" class="d-flex flex-column gap-16 m-t-16">
+                                <p class="mat-body-1 text-secondary">
+                                    Invite managers or staff to join your restaurant. You can skip this step and invite
+                                    them later from Settings.
+                                </p>
+
+                                <mat-form-field appearance="outline" class="w-100">
+                                    <mat-label>Email addresses (one per line)</mat-label>
+                                    <textarea matInput formControlName="inviteEmails"
+                                        data-test-id="auth-setup-invite-input"
+                                        placeholder="manager@myrestaurant.com&#10;staff@myrestaurant.com"
+                                        rows="4"></textarea>
+                                </mat-form-field>
+
+                                <div class="d-flex justify-content-between m-t-8">
+                                    <button mat-stroked-button matStepperPrevious>Back</button>
+                                    <div class="d-flex gap-8">
+                                        <button mat-stroked-button matStepperNext>Skip</button>
+                                        <button mat-flat-button color="primary" matStepperNext>
+                                            Next Step
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </mat-step>
+
+                        <!-- ── Step 3: Finish ── -->
+                        <mat-step label="Finish Setup">
+                            <div class="d-flex flex-column align-items-center gap-24 p-24 text-center">
+                                <mat-icon class="text-success"
+                                    style="font-size: 64px; width: 64px; height: 64px; color: var(--color-primary)">
+                                    check_circle
+                                </mat-icon>
+                                <h2 class="mat-headline-5 m-0">You're ready to go!</h2>
+                                <p class="mat-body-1 text-secondary">
+                                    Your restaurant workspace has been configured. Click Finish to go to your dashboard.
+                                </p>
+
+                                @if (errorMessage()) {
+                                <mat-error>{{ errorMessage() }}</mat-error>
+                                }
+
+                                <div class="d-flex gap-8">
+                                    <button mat-stroked-button matStepperPrevious
+                                        [disabled]="isSubmitting()">Back</button>
+                                    <button mat-flat-button color="primary" (click)="finish()"
+                                        [disabled]="isSubmitting()" data-test-id="auth-setup-finish-btn">
+                                        {{ isSubmitting() ? 'Setting up…' : 'Finish Setup' }}
+                                    </button>
+                                </div>
+                            </div>
+                        </mat-step>
+
+                    </mat-stepper>
+                </mat-card-content>
+            </mat-card>
+
+        </div>
+    </div>
+</div>
