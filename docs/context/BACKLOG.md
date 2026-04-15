@@ -28,7 +28,7 @@
 
 | Shard ID | Title | Module | Priority | Status | Complexity | Story Ref | File |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| AUTH-001 | Login with Email & Password | AUTH | High | Not Started | S | AUTH-001 | [AUTH-001](../shards/AUTH/AUTH-001-login.md) |
+| AUTH-001 | Login with Email & Password | AUTH | High | Completed | S | AUTH-001 | [AUTH-001](../shards/AUTH/AUTH-001-login.md) |
 | AUTH-002 | Role-Based Route Guards | AUTH | High | Not Started | S | AUTH-002 | [AUTH-002](../shards/AUTH/AUTH-002-role-based-route-guards.md) |
 | AUTH-003 | First-Run Restaurant Setup Wizard | AUTH | High | Not Started | M | AUTH-003 | [AUTH-003](../shards/AUTH/AUTH-003-first-run-setup-wizard.md) |
 | AUTH-004 | Profile & Password Management | AUTH | Medium | Not Started | S | AUTH-004 | [AUTH-004](../shards/AUTH/AUTH-004-profile-password-management.md) |

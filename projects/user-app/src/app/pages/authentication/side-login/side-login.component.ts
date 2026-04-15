@@ -1,26 +1,22 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
-import { RouterModule } from '@angular/router';
 import { MaterialModule } from 'src/app/material.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { Auth, signInWithEmailAndPassword } from '@angular/fire/auth';
+import {
+  Auth,
+  signInWithEmailAndPassword,
+  browserLocalPersistence,
+  setPersistence,
+} from '@angular/fire/auth';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-side-login',
-  imports: [
-    RouterModule,
-    MaterialModule,
-    FormsModule,
-    ReactiveFormsModule,
-    CommonModule,
-  ],
+  imports: [MaterialModule, FormsModule, ReactiveFormsModule, CommonModule],
   templateUrl: './side-login.component.html',
 })
 export class AppSideLoginComponent {
   private auth = inject(Auth);
-  private router = inject(Router);
 
   errorMessage = signal<string | null>(null);
   isLoading = signal(false);
@@ -39,12 +35,13 @@ export class AppSideLoginComponent {
     this.errorMessage.set(null);
     this.isLoading.set(true);
     try {
+      await setPersistence(this.auth, browserLocalPersistence);
       await signInWithEmailAndPassword(
         this.auth,
         this.f['email'].value!,
         this.f['password'].value!,
       );
-      this.router.navigate(['/dashboard/home']);
+      // Navigation is handled by AppComponent's onAuthStateChanged listener.
     } catch (err: any) {
       this.errorMessage.set(this.friendlyError(err.code));
     } finally {

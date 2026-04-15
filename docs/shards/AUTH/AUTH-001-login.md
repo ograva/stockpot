@@ -6,7 +6,7 @@
 | **Module** | AUTH — User-App Authentication & Onboarding |
 | **Story Ref** | AUTH-001 |
 | **Priority** | High |
-| **Status** | Not Started |
+| **Status** | Completed |
 | **Complexity** | S |
 | **Depends On** | None |
 

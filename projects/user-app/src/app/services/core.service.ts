@@ -1,7 +1,6 @@
-import { Injectable, signal, inject } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { AppSettings, defaults } from '../config';
-import { Auth, User, authState } from '@angular/fire/auth';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Auth, User } from '@angular/fire/auth';
 
 export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
 
@@ -12,35 +11,30 @@ export class CoreService {
   private auth = inject(Auth);
   private optionsSignal = signal<AppSettings>(defaults);
 
-  // Writable signal so that profile updates (displayName, photoURL) are
-  // reflected in the header without waiting for a new auth-state event.
-  // authState() only fires on sign-in / sign-out, NOT on updateProfile().
+  // Auth state signal — written exclusively by AppComponent's onAuthStateChanged listener.
+  // undefined = still resolving, null = unauthenticated, User = authenticated.
   private readonly _currentUser = signal<User | null | undefined>(undefined);
   readonly currentUser = this._currentUser.asReadonly();
 
-  constructor() {
-    authState(this.auth)
-      .pipe(takeUntilDestroyed())
-      .subscribe((user) => this._currentUser.set(user));
+  /** Called only by AppComponent's onAuthStateChanged listener. */
+  setCurrentUser(user: User | null): void {
+    this._currentUser.set(user);
   }
 
-  /** Call after updateProfile() to immediately reflect the updated
-   *  displayName / photoURL in the header and any other consumers.
-   *
-   *  Firebase mutates the User object in-place, so the signal would see
-   *  the same object reference and skip re-renders. Setting null first
-   *  forces Angular's Object.is() check to detect a real change. */
+  /** Call after updateProfile() to immediately reflect the updated displayName / photoURL.
+   *  Firebase mutates the User object in-place, so the signal needs a null-then-user
+   *  assignment to break the object reference and force Signal re-evaluation. */
   refreshCurrentUser(): void {
     const user = this.auth.currentUser;
-    this._currentUser.set(null);   // force reference break
-    this._currentUser.set(user);   // restore with updated profile
+    this._currentUser.set(null);
+    this._currentUser.set(user);
   }
 
-  readonly authStatus = (): AuthStatus => {
-    const user = this.currentUser();
+  readonly authStatus = computed<AuthStatus>(() => {
+    const user = this._currentUser();
     if (user === undefined) return 'loading';
     return user !== null ? 'authenticated' : 'unauthenticated';
-  };
+  });
 
   getOptions() {
     return this.optionsSignal();
