@@ -9,19 +9,19 @@
 
 **StockPot** is a three-sided SaaS platform built by **Novus Apps** for SMB restaurants in the Philippines. It digitizes a 30-year-old expert Excel model into a closed-loop system that couples purchasing, receiving, preparation, and sales reconciliation — eliminating the operational guesswork that costs restaurant owners food-cost margin.
 
-| Field | Details |
-| :--- | :--- |
-| **Owner** | Novus Apps |
-| **Stack** | Angular 21 + Firebase + Material 21 + Tailwind 4 |
-| **Architecture** | Angular monorepo (`angular.json`) + single Firebase project |
-| **Admin App** | `projects/admin` — port 4200 — Platform operator dashboard |
-| **User-App** | `projects/user-app` — port 4400 — Restaurant operations PWA (offline-first) |
-| **Vendor Portal** | `projects/vendor-app` — port 4600 — Supplier self-service catalog (new) |
-| **Hardware Bridge** | `local-bridge/` — port 3500 — Node.js Express server (on-premise, new) |
-| **Shared Library** | `projects/shared` — importable as `@stockpot/shared` |
-| **Backend** | Firebase Auth, Firestore, Cloud Functions (Node.js 22), Storage, FCM |
-| **E2E Testing** | Playwright + Chromium |
-| **Unit Testing** | Jasmine + Karma |
+| Field               | Details                                                                     |
+| :------------------ | :-------------------------------------------------------------------------- |
+| **Owner**           | Novus Apps                                                                  |
+| **Stack**           | Angular 21 + Firebase + Material 21 + Tailwind 4                            |
+| **Architecture**    | Angular monorepo (`angular.json`) + single Firebase project                 |
+| **Admin App**       | `projects/admin` — port 4200 — Platform operator dashboard                  |
+| **User-App**        | `projects/user-app` — port 4400 — Restaurant operations PWA (offline-first) |
+| **Vendor Portal**   | `projects/vendor-app` — port 4600 — Supplier self-service catalog (new)     |
+| **Hardware Bridge** | `local-bridge/` — port 3500 — Node.js Express server (on-premise, new)      |
+| **Shared Library**  | `projects/shared` — importable as `@stockpot/shared`                        |
+| **Backend**         | Firebase Auth, Firestore, Cloud Functions (Node.js 22), Storage, FCM        |
+| **E2E Testing**     | Playwright + Chromium                                                       |
+| **Unit Testing**    | Jasmine + Karma                                                             |
 
 > For complete context see: `docs/context/PRD.md`, `docs/context/Architecture.md`, `docs/context/CONSTRAINTS.md`, `docs/context/ProjectBrief.md`.
 
@@ -117,7 +117,7 @@ stockpot/
 All Angular apps import shared models via:
 
 ```typescript
-import { RestaurantDoc, deserializeRestaurant } from '@stockpot/shared';
+import { RestaurantDoc, deserializeRestaurant } from "@stockpot/shared";
 ```
 
 Resolves to `projects/shared/src/index.ts` via `paths` in root `tsconfig.json`. **Never duplicate model definitions inside individual app `src/` folders.**
@@ -128,28 +128,28 @@ Resolves to `projects/shared/src/index.ts` via `paths` in root `tsconfig.json`. 
 
 The 10 module prefix codes below are canonical — they drive story files, component names, test IDs, and Cloud Function names. Do not invent new prefix codes.
 
-| Prefix | Module Name | App | Sprint | One-Line Description |
-| :--- | :--- | :--- | :--- | :--- |
-| `AUTH` | User-App Authentication & Onboarding | user-app | 1 | Login, role-based guards, first-run restaurant setup wizard |
-| `ADMN` | Admin App (Platform Operator) | admin | 1 | Tenant management, subscriptions, platform catalog (UoMs, ingredients, suppliers) |
-| `MSTR` | Restaurant Master Data Setup | user-app | 1 | Raw materials, sub-components, recipes, par levels, back-calculation engine |
-| `REPO` | Smart PO & Replenishment Engine | user-app | 2 | Shortfall dashboard, auto-PO generation, PO approval and history |
-| `KTCH` | Kitchen Execution Hub | user-app | 2 | Touch-first receiving, prep batching, stock adjustments — tablet-optimised |
-| `SYNC` | Offline Sync & Receiving | user-app | 2 | StoreForwardService queue, offline banner, reconnect drain |
-| `HWBR` | Local Hardware Bridge | local-bridge | 2 | Node.js Express proxying weighing scales and thermal printers |
-| `VNDR` | Vendor / Supplier Portal | vendor-app | 2 | Supplier catalog self-management, price updates, incoming PO view |
-| `RCNC` | Reconciliation & Variance Auditing | user-app | 3 | CSV POS upload, theoretical deduction run, expected vs. actual count sheet |
-| `ALRT` | Alert Engine | user-app + CF | 3 | Stockout and over-budget alerts via Firestore triggers, FCM push, in-app notifications |
+| Prefix | Module Name                          | App           | Sprint | One-Line Description                                                                   |
+| :----- | :----------------------------------- | :------------ | :----- | :------------------------------------------------------------------------------------- |
+| `AUTH` | User-App Authentication & Onboarding | user-app      | 1      | Login, role-based guards, first-run restaurant setup wizard                            |
+| `ADMN` | Admin App (Platform Operator)        | admin         | 1      | Tenant management, subscriptions, platform catalog (UoMs, ingredients, suppliers)      |
+| `MSTR` | Restaurant Master Data Setup         | user-app      | 1      | Raw materials, sub-components, recipes, par levels, back-calculation engine            |
+| `REPO` | Smart PO & Replenishment Engine      | user-app      | 2      | Shortfall dashboard, auto-PO generation, PO approval and history                       |
+| `KTCH` | Kitchen Execution Hub                | user-app      | 2      | Touch-first receiving, prep batching, stock adjustments — tablet-optimised             |
+| `SYNC` | Offline Sync & Receiving             | user-app      | 2      | StoreForwardService queue, offline banner, reconnect drain                             |
+| `HWBR` | Local Hardware Bridge                | local-bridge  | 2      | Node.js Express proxying weighing scales and thermal printers                          |
+| `VNDR` | Vendor / Supplier Portal             | vendor-app    | 2      | Supplier catalog self-management, price updates, incoming PO view                      |
+| `RCNC` | Reconciliation & Variance Auditing   | user-app      | 3      | CSV POS upload, theoretical deduction run, expected vs. actual count sheet             |
+| `ALRT` | Alert Engine                         | user-app + CF | 3      | Stockout and over-budget alerts via Firestore triggers, FCM push, in-app notifications |
 
 ### User Roles
 
-| Role | App | Access Level |
-| :--- | :--- | :--- |
-| `owner` | user-app | Full access — configuration, approvals, reconciliation, alerts |
-| `manager` | user-app | Kitchen, PO management, stock adj. Cannot access master data or reconciliation |
-| `staff` | user-app | `/kitchen/*` routes only. Read-only stock views |
-| `platform_admin` | admin | Custom Firebase Auth claim. All platform catalog writes |
-| `vendorId` claim | vendor-app | Custom Firebase Auth claim. Scoped to `vendors/{vendorId}` collection |
+| Role             | App        | Access Level                                                                   |
+| :--------------- | :--------- | :----------------------------------------------------------------------------- |
+| `owner`          | user-app   | Full access — configuration, approvals, reconciliation, alerts                 |
+| `manager`        | user-app   | Kitchen, PO management, stock adj. Cannot access master data or reconciliation |
+| `staff`          | user-app   | `/kitchen/*` routes only. Read-only stock views                                |
+| `platform_admin` | admin      | Custom Firebase Auth claim. All platform catalog writes                        |
+| `vendorId` claim | vendor-app | Custom Firebase Auth claim. Scoped to `vendors/{vendorId}` collection          |
 
 ---
 
@@ -189,12 +189,12 @@ export interface PurchaseOrderDoc {
   // ... other fields
 }
 
-export type PurchaseOrder = Omit<PurchaseOrderDoc, '_schemaVersion'>;
+export type PurchaseOrder = Omit<PurchaseOrderDoc, "_schemaVersion">;
 
 export function deserializePurchaseOrder(raw: unknown): PurchaseOrder {
   const data = (raw ?? {}) as Partial<PurchaseOrderDoc>;
   // migration gate here
-  return { status: data.status ?? 'DRAFT', /* ... */ };
+  return { status: data.status ?? "DRAFT" /* ... */ };
 }
 
 export function serializePurchaseOrder(po: PurchaseOrder): PurchaseOrderDoc {
@@ -207,6 +207,7 @@ export function serializePurchaseOrder(po: PurchaseOrder): PurchaseOrderDoc {
 ```
 
 **Rules:**
+
 - `serialize()`: omit empty optionals — **never write `null` to Firestore**
 - `deserialize()`: handle schema migration and fill defaults
 - `_schemaVersion` is always written; never stripped
@@ -220,10 +221,10 @@ Firebase Auth state is registered **once** in `AppComponent` via `onAuthStateCha
 
 ```typescript
 @Component({
-  selector: 'app-example',
+  selector: "app-example",
   imports: [CommonModule, MaterialModule, RouterModule],
-  templateUrl: './example.component.html',
-  styleUrls: ['./example.component.scss'],
+  templateUrl: "./example.component.html",
+  styleUrls: ["./example.component.scss"],
 })
 export class ExampleComponent {}
 ```
@@ -294,17 +295,17 @@ npm run firebase:deploy             # Deploy to Firebase Hosting (production)
 
 ### Port Reference
 
-| Port | Service | Used By |
-| :--- | :--- | :--- |
-| 4200 | Admin Angular app | Browser, Playwright admin E2E |
-| 4400 | User-App Angular PWA | Browser, Playwright user E2E |
-| 4600 | Vendor Portal Angular app | Browser |
+| Port | Service                         | Used By                              |
+| :--- | :------------------------------ | :----------------------------------- |
+| 4200 | Admin Angular app               | Browser, Playwright admin E2E        |
+| 4400 | User-App Angular PWA            | Browser, Playwright user E2E         |
+| 4600 | Vendor Portal Angular app       | Browser                              |
 | 3500 | Local Hardware Bridge (Express) | User-App browser (same machine only) |
-| 8080 | Firebase Emulator UI | Browser |
-| 8085 | Firestore Emulator | All Angular apps |
-| 9099 | Auth Emulator | All Angular apps |
-| 5001 | Functions Emulator | All Angular apps |
-| 9199 | Storage Emulator | All Angular apps |
+| 8080 | Firebase Emulator UI            | Browser                              |
+| 8085 | Firestore Emulator              | All Angular apps                     |
+| 9099 | Auth Emulator                   | All Angular apps                     |
+| 5001 | Functions Emulator              | All Angular apps                     |
+| 9199 | Storage Emulator                | All Angular apps                     |
 
 > **Emulators first!** Always start `npm run firebase:emulators` before the Angular apps, or use `npm run dev`. Angular apps call `connectAuthEmulator()` and `connectFirestoreEmulator()` at bootstrap — missing emulators cause silent CORS failures.
 
@@ -312,29 +313,29 @@ npm run firebase:deploy             # Deploy to Firebase Hosting (production)
 
 ## 6. Key Files Reference
 
-| File | Purpose |
-| :--- | :--- |
-| `projects/admin/src/app/app.config.ts` | Admin app providers — Firebase, router, Material |
-| `projects/admin/src/app/app.routes.ts` | Admin route tree (lazy-loaded pages) |
-| `projects/admin/src/app/material.module.ts` | Admin Material module — all Material re-exports |
-| `projects/user-app/src/app/app.config.ts` | User-App providers — Firebase with emulator toggle, StoreForward, i18n |
-| `projects/user-app/src/app/app.routes.ts` | User-App route tree with role guards |
-| `projects/user-app/src/app/material.module.ts` | User-App Material module |
-| `projects/vendor-app/src/app/app.config.ts` | Vendor Portal providers — Firebase Auth (magic link) |
-| `projects/vendor-app/src/app/app.routes.ts` | Vendor Portal routes: login, catalog, orders |
-| `projects/vendor-app/src/app/material.module.ts` | Vendor Portal Material module |
-| `projects/shared/src/index.ts` | `@stockpot/shared` barrel export — all model imports start here |
-| `projects/shared/src/models/` | All DAT-302 Firestore model files |
-| `environments/environment.local.ts` | Local Firebase config — always used during dev |
-| `functions/src/index.ts` | Cloud Function registrations |
-| `local-bridge/src/index.ts` | Hardware bridge Express server entry point |
-| `tsconfig.json` (root) | `@stockpot/shared` path alias defined here |
-| `angular.json` | All four project definitions (admin, user-app, vendor-app, shared) |
-| `firestore.rules` | Multi-tenant security rules — `restaurants/{rId}`, `vendors/{vId}`, platform claims |
-| `docs/context/PRD.md` | Feature modules, user stories, acceptance criteria (54 stories) |
-| `docs/context/Architecture.md` | Tech stack, data models, API design, system diagrams |
-| `docs/context/CONSTRAINTS.md` | Golden Rules — all code must comply |
-| `docs/context/DECISION_LOG.md` | ADL-001 → ADL-009 — architectural decision history |
+| File                                             | Purpose                                                                             |
+| :----------------------------------------------- | :---------------------------------------------------------------------------------- |
+| `projects/admin/src/app/app.config.ts`           | Admin app providers — Firebase, router, Material                                    |
+| `projects/admin/src/app/app.routes.ts`           | Admin route tree (lazy-loaded pages)                                                |
+| `projects/admin/src/app/material.module.ts`      | Admin Material module — all Material re-exports                                     |
+| `projects/user-app/src/app/app.config.ts`        | User-App providers — Firebase with emulator toggle, StoreForward, i18n              |
+| `projects/user-app/src/app/app.routes.ts`        | User-App route tree with role guards                                                |
+| `projects/user-app/src/app/material.module.ts`   | User-App Material module                                                            |
+| `projects/vendor-app/src/app/app.config.ts`      | Vendor Portal providers — Firebase Auth (magic link)                                |
+| `projects/vendor-app/src/app/app.routes.ts`      | Vendor Portal routes: login, catalog, orders                                        |
+| `projects/vendor-app/src/app/material.module.ts` | Vendor Portal Material module                                                       |
+| `projects/shared/src/index.ts`                   | `@stockpot/shared` barrel export — all model imports start here                     |
+| `projects/shared/src/models/`                    | All DAT-302 Firestore model files                                                   |
+| `environments/environment.local.ts`              | Local Firebase config — always used during dev                                      |
+| `functions/src/index.ts`                         | Cloud Function registrations                                                        |
+| `local-bridge/src/index.ts`                      | Hardware bridge Express server entry point                                          |
+| `tsconfig.json` (root)                           | `@stockpot/shared` path alias defined here                                          |
+| `angular.json`                                   | All four project definitions (admin, user-app, vendor-app, shared)                  |
+| `firestore.rules`                                | Multi-tenant security rules — `restaurants/{rId}`, `vendors/{vId}`, platform claims |
+| `docs/context/PRD.md`                            | Feature modules, user stories, acceptance criteria (54 stories)                     |
+| `docs/context/Architecture.md`                   | Tech stack, data models, API design, system diagrams                                |
+| `docs/context/CONSTRAINTS.md`                    | Golden Rules — all code must comply                                                 |
+| `docs/context/DECISION_LOG.md`                   | ADL-001 → ADL-009 — architectural decision history                                  |
 
 ---
 
@@ -361,12 +362,12 @@ Every feature is designed for testability. Test IDs are added at component creat
 
 ### Testing Strategy
 
-| Layer | Tool | Scope |
-| :--- | :--- | :--- |
-| Unit Tests | Jasmine + Karma | Component logic, model serialize/deserialize transforms, CostService calculations |
-| E2E Tests | Playwright + Chromium | Full user flows — admin and user-app grouped separately |
-| Test Data Attributes | `data-test-id` | Every interactive element; required for all Playwright selectors |
-| Environment Safety | `playwright.config.*.ts` | E2E runs only on emulators and staging — never production |
+| Layer                | Tool                     | Scope                                                                             |
+| :------------------- | :----------------------- | :-------------------------------------------------------------------------------- |
+| Unit Tests           | Jasmine + Karma          | Component logic, model serialize/deserialize transforms, CostService calculations |
+| E2E Tests            | Playwright + Chromium    | Full user flows — admin and user-app grouped separately                           |
+| Test Data Attributes | `data-test-id`           | Every interactive element; required for all Playwright selectors                  |
+| Environment Safety   | `playwright.config.*.ts` | E2E runs only on emulators and staging — never production                         |
 
 ### `data-test-id` Convention
 
@@ -386,6 +387,7 @@ Every feature is designed for testability. Test IDs are added at component creat
 **Format:** `[module-prefix]-[element-type]-[action/purpose]` (kebab-case)
 
 **Examples from this project:**
+
 - `auth-login-email`, `auth-login-submit`, `auth-setup-wizard`
 - `repo-generate-po-button`, `repo-po-history-table`
 - `ktch-receiving-confirm-button`, `sync-offline-banner`
@@ -395,17 +397,17 @@ Every feature is designed for testability. Test IDs are added at component creat
 
 ### Test Numbering System
 
-| Range | Scope |
-| :--- | :--- |
+| Range     | Scope                                        |
+| :-------- | :------------------------------------------- |
 | T000–T099 | Authentication & Authorization (AUTH module) |
-| T100–T199 | Admin App flows (ADMN module) |
-| T200–T299 | Master Data Setup (MSTR module) |
-| T300–T399 | PO & Replenishment (REPO module) |
-| T400–T499 | Kitchen Execution Hub (KTCH + SYNC modules) |
-| T500–T599 | Vendor Portal flows (VNDR module) |
-| T600–T699 | Reconciliation & Auditing (RCNC module) |
-| T700–T799 | Alert Engine (ALRT module) |
-| T900–T999 | Edge cases & Error handling |
+| T100–T199 | Admin App flows (ADMN module)                |
+| T200–T299 | Master Data Setup (MSTR module)              |
+| T300–T399 | PO & Replenishment (REPO module)             |
+| T400–T499 | Kitchen Execution Hub (KTCH + SYNC modules)  |
+| T500–T599 | Vendor Portal flows (VNDR module)            |
+| T600–T699 | Reconciliation & Auditing (RCNC module)      |
+| T700–T799 | Alert Engine (ALRT module)                   |
+| T900–T999 | Edge cases & Error handling                  |
 
 ### E2E File Structure
 
@@ -432,11 +434,11 @@ e2e/
 
 ```typescript
 // e2e/user-app/flows/replenishment/T300-generate-po.spec.ts
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-test.describe('T300: Auto-PO Generation', () => {
-  test('T300.1: should generate draft PO from shortfall list in under 3 seconds', async ({ page }) => {
-    await page.goto('/replenishment');
+test.describe("T300: Auto-PO Generation", () => {
+  test("T300.1: should generate draft PO from shortfall list in under 3 seconds", async ({ page }) => {
+    await page.goto("/replenishment");
     const start = Date.now();
     await page.locator('[data-test-id="repo-generate-po-button"]').click();
     await expect(page.locator('[data-test-id="repo-po-draft-status"]')).toBeVisible();
@@ -449,9 +451,12 @@ test.describe('T300: Auto-PO Generation', () => {
 
 ```typescript
 // playwright.config.admin.ts
-const baseURL = process.env['TEST_ENV'] === 'production'
-  ? (() => { throw new Error('E2E tests cannot run on production!'); })()
-  : process.env['TEST_ENV'] === 'staging'
-    ? 'https://staging.stockpot.ph'
-    : 'http://localhost:4200';  // Default: emulators
+const baseURL =
+  process.env["TEST_ENV"] === "production"
+    ? (() => {
+        throw new Error("E2E tests cannot run on production!");
+      })()
+    : process.env["TEST_ENV"] === "staging"
+      ? "https://staging.stockpot.ph"
+      : "http://localhost:4200"; // Default: emulators
 ```

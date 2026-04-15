@@ -173,6 +173,18 @@ First login: email magic link (invite flow). On first portal session, vendor is 
 **Trade-offs:**  
 Slightly more complex first-login UX than pure email/password. Pro: no password transmission during invite; consistent with modern invite conventions (Slack, Notion). The optional password-link step allows vendors to choose their auth style.
 
+**Emulator Testing Constraint:**  
+The Firebase Auth emulator does not deliver real emails. `sendSignInLinkToEmail` is intercepted locally but the magic link is inaccessible without inspecting emulator REST logs — impractical for routine dev/QA. Therefore: when `environment.useEmulators === true`, the Vendor Portal login page **must** display a standard `signInWithEmailAndPassword` form instead of the magic-link request form. This is gated via the environment flag and requires no separate code path in production.
+
+```typescript
+// VendorLoginComponent
+if (environment.useEmulators) {
+  // Render email/password form directly
+} else {
+  // Render magic link request form (production)
+}
+```
+
 **Impact:**  
 VNDR-001 implementation, `VendorCoreService` auth flow, Vendor Portal login page.
 
