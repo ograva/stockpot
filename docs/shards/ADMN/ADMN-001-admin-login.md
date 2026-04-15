@@ -6,7 +6,7 @@
 | **Module** | ADMN — Admin App (Platform Operator) |
 | **Story Ref** | ADMN-001 |
 | **Priority** | High |
-| **Status** | Not Started |
+| **Status** | Completed |
 | **Complexity** | S |
 | **Depends On** | None |
 

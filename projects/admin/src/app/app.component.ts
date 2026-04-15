@@ -1,6 +1,6 @@
 import { Component, OnDestroy, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
-import { Auth, onAuthStateChanged } from '@angular/fire/auth';
+import { Auth, onAuthStateChanged, signOut, getIdTokenResult } from '@angular/fire/auth';
 import { CoreService } from './services/core.service';
 
 @Component({
@@ -21,7 +21,22 @@ export class AppComponent implements OnDestroy {
   private readonly unsubscribeAuth: () => void;
 
   constructor() {
-    this.unsubscribeAuth = onAuthStateChanged(this.auth, (user) => {
+    this.unsubscribeAuth = onAuthStateChanged(this.auth, async (user) => {
+      if (user) {
+        // Verify the platform_admin custom claim before granting access.
+        // Always force-refresh the token to catch claim revocations.
+        const tokenResult = await getIdTokenResult(user, true);
+        if (!tokenResult.claims['platform_admin']) {
+          // Sign out non-admin users and redirect to login with access-denied flag.
+          await signOut(this.auth);
+          this.core.setCurrentUser(null);
+          this.router.navigate(['/authentication/login'], {
+            queryParams: { error: 'access_denied' },
+          });
+          return;
+        }
+      }
+
       // 1. Keep the shared signal in sync
       this.core.setCurrentUser(user);
 
@@ -40,7 +55,7 @@ export class AppComponent implements OnDestroy {
         }
       } else {
         // User logged out or token expired — redirect away from protected routes
-        if (url.startsWith('/dashboard')) {
+        if (!url.startsWith('/authentication')) {
           this.router.navigate(['/authentication/login']);
         }
       }

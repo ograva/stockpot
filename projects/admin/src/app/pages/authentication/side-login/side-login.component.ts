@@ -1,10 +1,15 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { RouterModule } from '@angular/router';
 import { MaterialModule } from 'src/app/material.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { Auth, signInWithEmailAndPassword } from '@angular/fire/auth';
+import {
+  Auth,
+  signInWithEmailAndPassword,
+  browserLocalPersistence,
+  setPersistence,
+} from '@angular/fire/auth';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -18,9 +23,9 @@ import { CommonModule } from '@angular/common';
   ],
   templateUrl: './side-login.component.html',
 })
-export class AppSideLoginComponent {
+export class AppSideLoginComponent implements OnInit {
   private auth = inject(Auth);
-  private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   errorMessage = signal<string | null>(null);
   isLoading = signal(false);
@@ -34,17 +39,28 @@ export class AppSideLoginComponent {
     return this.form.controls;
   }
 
+  ngOnInit(): void {
+    // Check for access-denied error passed via query param from AppComponent
+    const error = this.route.snapshot.queryParamMap.get('error');
+    if (error === 'access_denied') {
+      this.errorMessage.set(
+        'Access Denied. This account does not have platform admin privileges.',
+      );
+    }
+  }
+
   async submit() {
     if (this.form.invalid) return;
     this.errorMessage.set(null);
     this.isLoading.set(true);
     try {
+      await setPersistence(this.auth, browserLocalPersistence);
       await signInWithEmailAndPassword(
         this.auth,
         this.f['email'].value!,
         this.f['password'].value!,
       );
-      this.router.navigate(['/dashboard/home']);
+      // Navigation is handled by AppComponent's onAuthStateChanged listener.
     } catch (err: any) {
       this.errorMessage.set(this.friendlyError(err.code));
     } finally {
