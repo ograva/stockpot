@@ -303,7 +303,7 @@ npm run firebase:deploy             # Deploy to Firebase Hosting (production)
 | 3500 | Local Hardware Bridge (Express) | User-App browser (same machine only) |
 | 8080 | Firebase Emulator UI            | Browser                              |
 | 8085 | Firestore Emulator              | All Angular apps                     |
-| 9099 | Auth Emulator                   | All Angular apps                     |
+| 9098 | Auth Emulator                   | All Angular apps                     |
 | 5001 | Functions Emulator              | All Angular apps                     |
 | 9199 | Storage Emulator                | All Angular apps                     |
 

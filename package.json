@@ -24,6 +24,8 @@
     "test:all": "npm test && npm run test:e2e",
     "firebase:emulators": "npx firebase emulators:start --import=./emulator-data --export-on-exit",
     "firebase:emulators:export": "npx firebase emulators:export ./emulator-data --force",
+    "firebase:seed": "node scripts/seed-firestore.mjs",
+    "firebase:seed:fresh": "node scripts/seed-firestore.mjs --clear",
     "firebase:emulators:kill": "pkill -f 'firebase.*emulators\\|cloud-firestore-emulator\\|cloud-storage-rules-runtime\\|ui_server' 2>/dev/null; pkill -f 'java.*emulator' 2>/dev/null; echo 'Emulator processes killed'",
     "firebase:emulators:restart": "npm run firebase:emulators:kill && sleep 2 && npm run firebase:emulators",
     "firebase:deploy": "npx firebase deploy",

@@ -11,11 +11,16 @@ service cloud.firestore {
     // ─── Platform helpers ────────────────────────────────────────────────────
 
     // StockPot platform admin (operates the admin app at port 4200).
-    // Checks the top-level /users/{uid} collection that Firebase Auth populates.
+    // Checks the top-level /users/{uid} doc written by the admin app on first login.
     function isPlatformAdmin() {
       return request.auth != null &&
         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'admin';
+    }
+
+    // Vendor portal access — checked via custom Auth claim set by the Admin SDK (VNDR module).
+    function isVendor(vendorId) {
+      return request.auth != null && request.auth.token.vendorId == vendorId;
     }
 
     // ─── Platform-level collections (admin app only) ─────────────────────────
@@ -42,6 +47,25 @@ service cloud.firestore {
       allow read, write: if isPlatformAdmin();
     }
 
+    // Top-level vendor catalog (PlatformVendorDoc) — vendor portal + admin.
+    // ADL-003: top-level vendors/{vendorId} = PlatformVendorDoc.
+    match /vendors/{vendorId} {
+      allow read: if request.auth != null;
+      allow write: if isPlatformAdmin() || isVendor(vendorId);
+    }
+
+    // Platform ingredient catalog (ADMN-005) — ADL-002: flat path platform_ingredients/.
+    match /platform_ingredients/{ingredientId} {
+      allow read: if request.auth != null;
+      allow write: if isPlatformAdmin();
+    }
+
+    // Platform units of measure (ADMN-006) — ADL-002: flat path platform_uom/.
+    match /platform_uom/{uomId} {
+      allow read: if request.auth != null;
+      allow write: if isPlatformAdmin();
+    }
+
     // ─── Restaurant tenant helpers ───────────────────────────────────────────
 
     // Returns the caller's user doc inside the restaurant, or an empty resource
@@ -66,6 +90,11 @@ service cloud.firestore {
     function isManager(restaurantId) {
       return isMember(restaurantId) &&
         (userRole(restaurantId) == 'owner' || userRole(restaurantId) == 'manager');
+    }
+
+    // Caller has owner role — used for sensitive operations (reconciliation, etc.).
+    function isOwner(restaurantId) {
+      return isMember(restaurantId) && userRole(restaurantId) == 'owner';
     }
 
     // ─── Restaurant multi-tenant collection ──────────────────────────────────
@@ -103,6 +132,13 @@ service cloud.firestore {
         allow write: if isManager(restaurantId) || isPlatformAdmin();
       }
 
+      // Restaurant suppliers (RestaurantSupplierDoc) — ADL-003: renamed from vendors in v2.
+      // Path: restaurants/{rId}/suppliers/{supplierId}
+      match /suppliers/{supplierId} {
+        allow read: if isMember(restaurantId) || isPlatformAdmin();
+        allow write: if isManager(restaurantId) || isPlatformAdmin();
+      }
+
       // Inventory records — managers write, all members read.
       match /inventory/{inventoryId} {
         allow read: if isMember(restaurantId) || isPlatformAdmin();
@@ -114,9 +150,33 @@ service cloud.firestore {
         allow read, write: if isManager(restaurantId) || isPlatformAdmin();
       }
 
-      // Vendors — managers only.
-      match /vendors/{vendorId} {
-        allow read, write: if isManager(restaurantId) || isPlatformAdmin();
+      // Reconciliation documents (RCNC module) — owner-only; restricted financial data.
+      match /reconciliations/{reconciliationId} {
+        allow read, write: if isOwner(restaurantId) || isPlatformAdmin();
+      }
+
+      // Alerts (ALRT module) — all members read; Cloud Functions write via Admin SDK
+      // (bypasses rules). Managers can manually dismiss or acknowledge.
+      match /alerts/{alertId} {
+        allow read: if isMember(restaurantId) || isPlatformAdmin();
+        allow write: if isManager(restaurantId) || isPlatformAdmin();
+      }
+
+      // Per-user notifications (ALRT module) — target user reads their own;
+      // managers can read all; Cloud Functions write via Admin SDK.
+      match /notifications/{notificationId} {
+        allow read: if (isMember(restaurantId) &&
+                        resource.data.get('targetUid', '') == request.auth.uid) ||
+                       isManager(restaurantId) ||
+                       isPlatformAdmin();
+        allow write: if isManager(restaurantId) || isPlatformAdmin();
+      }
+
+      // Sync conflict log (SYNC-003 / ADL-005) — written by Cloud Functions only
+      // (Admin SDK bypasses rules). Managers and owners can read for audit purposes.
+      match /syncConflicts/{conflictId} {
+        allow read: if isManager(restaurantId) || isPlatformAdmin();
+        allow write: if isPlatformAdmin();
       }
 
       // Cost reports — managers only.

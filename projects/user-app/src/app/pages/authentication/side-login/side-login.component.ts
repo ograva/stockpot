@@ -9,10 +9,17 @@ import {
   setPersistence,
 } from '@angular/fire/auth';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-side-login',
-  imports: [MaterialModule, FormsModule, ReactiveFormsModule, CommonModule],
+  imports: [
+    MaterialModule,
+    FormsModule,
+    ReactiveFormsModule,
+    CommonModule,
+    RouterModule,
+  ],
   templateUrl: './side-login.component.html',
 })
 export class AppSideLoginComponent {

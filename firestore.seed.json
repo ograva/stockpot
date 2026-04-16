@@ -1,4 +1,9 @@
 {
+  "_note": "Reference snapshot of seed data. Applied by: npm run firebase:seed (scripts/seed-firestore.mjs)",
+  "_demoCredentials": {
+    "owner": "owner@demo.com   / password123",
+    "manager": "manager@demo.com / password123"
+  },
   "settings": [
     {
       "docId": "global",
@@ -6,13 +11,24 @@
         "appName": "StockPot",
         "theme": "orange_theme",
         "maintenanceMode": false,
-        "featureFlags": {
-          "enable_registration": true
-        }
+        "featureFlags": { "enable_registration": true }
       }
     }
   ],
-  "users": [],
+  "authUsers": [
+    {
+      "uid": "demo-owner-uid-001",
+      "email": "owner@demo.com",
+      "displayName": "Demo Owner",
+      "role": "owner"
+    },
+    {
+      "uid": "demo-manager-uid-001",
+      "email": "manager@demo.com",
+      "displayName": "Demo Manager",
+      "role": "manager"
+    }
+  ],
   "restaurants": [
     {
       "docId": "demo-restaurant-001",
@@ -24,6 +40,180 @@
         "currency": "PHP",
         "address": "123 Rizal Ave, Manila, Philippines",
         "createdAt": "2026-04-13T00:00:00.000Z"
+      },
+      "subCollections": {
+        "users": [
+          {
+            "docId": "demo-owner-uid-001",
+            "role": "owner",
+            "email": "owner@demo.com",
+            "name": "Demo Owner"
+          },
+          {
+            "docId": "demo-manager-uid-001",
+            "role": "manager",
+            "email": "manager@demo.com",
+            "name": "Demo Manager"
+          }
+        ],
+        "rawMaterials": [
+          {
+            "docId": "rm-rice-001",
+            "name": "Jasmine Rice",
+            "unit": "kg",
+            "currentStock": 50,
+            "parLevel": 20,
+            "unitCost": 55,
+            "category": "Dry Goods"
+          },
+          {
+            "docId": "rm-oil-001",
+            "name": "Cooking Oil",
+            "unit": "L",
+            "currentStock": 10,
+            "parLevel": 4,
+            "unitCost": 80,
+            "category": "Dry Goods"
+          },
+          {
+            "docId": "rm-chicken-001",
+            "name": "Chicken Breast",
+            "unit": "kg",
+            "currentStock": 15,
+            "parLevel": 5,
+            "unitCost": 280,
+            "category": "Proteins",
+            "criticalThreshold": 2
+          },
+          {
+            "docId": "rm-pork-001",
+            "name": "Pork Belly",
+            "unit": "kg",
+            "currentStock": 12,
+            "parLevel": 5,
+            "unitCost": 320,
+            "category": "Proteins",
+            "criticalThreshold": 2
+          },
+          {
+            "docId": "rm-onion-001",
+            "name": "White Onion",
+            "unit": "kg",
+            "currentStock": 8,
+            "parLevel": 3,
+            "unitCost": 70,
+            "category": "Vegetables"
+          },
+          {
+            "docId": "rm-garlic-001",
+            "name": "Garlic",
+            "unit": "kg",
+            "currentStock": 5,
+            "parLevel": 2,
+            "unitCost": 180,
+            "category": "Vegetables"
+          },
+          {
+            "docId": "rm-tomato-001",
+            "name": "Tomato",
+            "unit": "kg",
+            "currentStock": 6,
+            "parLevel": 3,
+            "unitCost": 60,
+            "category": "Vegetables"
+          },
+          {
+            "docId": "rm-soy-001",
+            "name": "Soy Sauce",
+            "unit": "L",
+            "currentStock": 4,
+            "parLevel": 2,
+            "unitCost": 90,
+            "category": "Sauces & Condiments"
+          },
+          {
+            "docId": "rm-vinegar-001",
+            "name": "Cane Vinegar",
+            "unit": "L",
+            "currentStock": 3,
+            "parLevel": 1,
+            "unitCost": 45,
+            "category": "Sauces & Condiments"
+          },
+          {
+            "docId": "rm-tamarind-001",
+            "name": "Tamarind Paste",
+            "unit": "kg",
+            "currentStock": 2.5,
+            "parLevel": 1,
+            "unitCost": 150,
+            "category": "Sauces & Condiments"
+          },
+          {
+            "docId": "rm-pepper-001",
+            "name": "Black Pepper",
+            "unit": "kg",
+            "currentStock": 1,
+            "parLevel": 0.5,
+            "unitCost": 850,
+            "category": "Spices"
+          },
+          {
+            "docId": "rm-laurel-001",
+            "name": "Bay Leaves",
+            "unit": "kg",
+            "currentStock": 0.5,
+            "parLevel": 0.2,
+            "unitCost": 400,
+            "category": "Spices"
+          }
+        ],
+        "subComponents": [
+          {
+            "docId": "sc-adobo-base-001",
+            "name": "Adobo Marinade Base",
+            "yieldQty": 0.15,
+            "yieldUnit": "L",
+            "rawIngredients": [
+              "rm-soy-001 (0.1L)",
+              "rm-vinegar-001 (0.05L)",
+              "rm-garlic-001 (0.02kg)",
+              "rm-pepper-001 (0.005kg)",
+              "rm-laurel-001 (0.003kg)"
+            ]
+          },
+          {
+            "docId": "sc-sinigang-broth-001",
+            "name": "Sinigang Broth Base",
+            "yieldQty": 1.5,
+            "yieldUnit": "L",
+            "rawIngredients": [
+              "rm-tamarind-001 (0.05kg)",
+              "rm-onion-001 (0.1kg)",
+              "rm-tomato-001 (0.15kg)"
+            ]
+          }
+        ],
+        "recipes": [
+          {
+            "docId": "rcp-chicken-adobo-001",
+            "name": "Chicken Adobo",
+            "recipeType": "COOKED_TO_ORDER",
+            "sellingPrice": 185
+          },
+          {
+            "docId": "rcp-pork-sinigang-001",
+            "name": "Pork Sinigang",
+            "recipeType": "COOKED_TO_ORDER",
+            "sellingPrice": 195
+          },
+          {
+            "docId": "rcp-sinangag-001",
+            "name": "Sinangag (Garlic Fried Rice)",
+            "recipeType": "PRE_MADE",
+            "sellingPrice": 55
+          }
+        ]
       }
     }
   ]
