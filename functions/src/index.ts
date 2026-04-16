@@ -11,8 +11,11 @@ import * as admin from 'firebase-admin';
 // Initialize Firebase Admin
 admin.initializeApp();
 
-// ─── MSTR-008 — Par Level Back-Calculation ───────────────────────────────────
-export { onRecipeParLevelWritten } from './handlers/back-calculation.handler';
+// ─── MSTR-011/012 — Par Level Back-Calculation (DAG Edition) ────────────────
+export {
+  onRecipeParLevelWritten,
+  onSubComponentWritten,
+} from './handlers/back-calculation.handler';
 
 /**
  * Example HTTP function

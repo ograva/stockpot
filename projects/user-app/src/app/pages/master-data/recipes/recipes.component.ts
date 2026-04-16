@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+﻿import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -18,6 +18,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   Recipe,
   RECIPE_DEFAULTS,
+  RecipeType,
   RecipeRawIngredient,
   RecipeSubComponentIngredient,
   RawMaterial,
@@ -35,7 +36,7 @@ import {
 } from '../../../services/sub-component.service';
 import { CostService } from '../../../services/cost.service';
 
-// ─── Add/Edit Recipe Dialog ───────────────────────────────────────────────────
+// â”€â”€â”€ Add/Edit Recipe Dialog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @Component({
   selector: 'app-recipe-dialog',
@@ -44,7 +45,7 @@ import { CostService } from '../../../services/cost.service';
     <h2 mat-dialog-title>{{ data.recipe ? 'Edit' : 'Add' }} Recipe</h2>
     <mat-dialog-content class="max-h-[80vh] overflow-y-auto">
       <mat-tab-group>
-        <!-- Basic Tab -->
+        <!-- â”€â”€ Details Tab â”€â”€ -->
         <mat-tab label="Details">
           <form [formGroup]="form" class="flex flex-col gap-4 pt-4">
             <mat-form-field>
@@ -54,7 +55,33 @@ import { CostService } from '../../../services/cost.service';
                 formControlName="name"
                 data-test-id="mstr-recipe-name-input"
               />
+              @if (form.get('name')?.hasError('required')) {
+                <mat-error>Name is required</mat-error>
+              }
             </mat-form-field>
+
+            <div>
+              <label class="text-sm font-medium text-gray-700 mb-1 block"
+                >Recipe Type</label
+              >
+              <mat-radio-group
+                formControlName="recipeType"
+                class="flex gap-4"
+                data-test-id="mstr-recipe-type-select"
+              >
+                <mat-radio-button value="COOKED_TO_ORDER"
+                  >Cooked to Order</mat-radio-button
+                >
+                <mat-radio-button value="PRE_MADE"
+                  >Pre-Made / Batch</mat-radio-button
+                >
+              </mat-radio-group>
+              <p class="text-xs text-gray-500 mt-1">
+                Pre-Made recipes deduct stock at prep time; Cooked to Order
+                deduct at sale.
+              </p>
+            </div>
+
             <mat-form-field>
               <mat-label>Category (optional)</mat-label>
               <input matInput formControlName="category" />
@@ -90,10 +117,22 @@ import { CostService } from '../../../services/cost.service';
               <mat-label>Par Portions Target</mat-label>
               <input matInput type="number" formControlName="parPortions" />
               <mat-hint
-                >Min portions needed — drives back-calculation engine
-                (MSTR-008)</mat-hint
+                >Min portions needed â€” drives back-calculation
+                engine</mat-hint
               >
             </mat-form-field>
+            @if (form.get('recipeType')?.value === 'PRE_MADE') {
+              <mat-form-field>
+                <mat-label>Current Batch Stock (portions)</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  formControlName="currentStock"
+                  data-test-id="mstr-recipe-stock-input"
+                />
+                <mat-hint>On-hand prepared portions</mat-hint>
+              </mat-form-field>
+            }
             <div class="flex items-center gap-2">
               <mat-slide-toggle formControlName="isActive"
                 >Active on Menu</mat-slide-toggle
@@ -106,7 +145,7 @@ import { CostService } from '../../../services/cost.service';
           </form>
         </mat-tab>
 
-        <!-- Ingredients Tab (MSTR-007) -->
+        <!-- â”€â”€ Ingredients Tab â”€â”€ -->
         <mat-tab label="Ingredients">
           <div class="pt-4 flex flex-col gap-4">
             <h3
@@ -133,7 +172,7 @@ import { CostService } from '../../../services/cost.service';
                       }
                     </mat-select>
                   </mat-form-field>
-                  <mat-form-field style="width: 100px">
+                  <mat-form-field style="width:100px">
                     <mat-label>Qty / Portion</mat-label>
                     <input
                       matInput
@@ -187,7 +226,7 @@ import { CostService } from '../../../services/cost.service';
                       }
                     </mat-select>
                   </mat-form-field>
-                  <mat-form-field style="width: 100px">
+                  <mat-form-field style="width:100px">
                     <mat-label>Qty / Portion</mat-label>
                     <input
                       matInput
@@ -201,7 +240,6 @@ import { CostService } from '../../../services/cost.service';
                     color="warn"
                     type="button"
                     (click)="removeSubIngredient($index)"
-                    [attr.matTooltip]="circularError[$index]"
                   >
                     <mat-icon>remove_circle</mat-icon>
                   </button>
@@ -225,6 +263,46 @@ import { CostService } from '../../../services/cost.service';
                 {{ theoreticalCost() | number: '1.2-2' }} PHP
               </span>
             </div>
+          </div>
+        </mat-tab>
+
+        <!-- â”€â”€ Instructions Tab â”€â”€ -->
+        <mat-tab label="Instructions">
+          <div class="flex flex-col gap-3 pt-4" [formGroup]="form">
+            @for (ctrl of instructionsArray.controls; track $index) {
+              <div class="flex items-start gap-2">
+                <span
+                  class="mt-3 text-sm text-gray-500 font-medium w-6 text-right"
+                  >{{ $index + 1 }}.</span
+                >
+                <mat-form-field class="flex-1">
+                  <mat-label>Step {{ $index + 1 }}</mat-label>
+                  <textarea
+                    matInput
+                    [formControl]="$any(ctrl)"
+                    rows="2"
+                    [attr.data-test-id]="'mstr-recipe-step-' + $index"
+                  ></textarea>
+                </mat-form-field>
+                <button
+                  mat-icon-button
+                  color="warn"
+                  type="button"
+                  (click)="removeStep($index)"
+                  class="mt-2"
+                >
+                  <mat-icon>remove_circle</mat-icon>
+                </button>
+              </div>
+            }
+            <button
+              mat-stroked-button
+              type="button"
+              data-test-id="mstr-recipe-add-step-btn"
+              (click)="addStep()"
+            >
+              <mat-icon>add</mat-icon> Add Step
+            </button>
           </div>
         </mat-tab>
       </mat-tab-group>
@@ -254,10 +332,12 @@ export class RecipeDialogComponent {
   fb = inject(FormBuilder);
   cost = inject(CostService);
 
-  circularError: Record<number, string> = {};
-
   form: FormGroup = this.fb.group({
     name: [this.data.recipe?.name ?? '', Validators.required],
+    recipeType: [
+      this.data.recipe?.recipeType ?? 'COOKED_TO_ORDER',
+      Validators.required,
+    ],
     category: [this.data.recipe?.category ?? ''],
     sellingPrice: [
       this.data.recipe?.sellingPrice ?? 0,
@@ -267,6 +347,7 @@ export class RecipeDialogComponent {
     portionSize: [this.data.recipe?.portionSize ?? 1, Validators.required],
     portionUnit: [this.data.recipe?.portionUnit ?? 'pcs', Validators.required],
     parPortions: [this.data.recipe?.parPortions ?? 0, Validators.min(0)],
+    currentStock: [this.data.recipe?.currentStock ?? 0, Validators.min(0)],
     isActive: [this.data.recipe?.isActive ?? true],
     notes: [this.data.recipe?.notes ?? ''],
     rawIngredients: this.fb.array(
@@ -285,6 +366,11 @@ export class RecipeDialogComponent {
         }),
       ),
     ),
+    instructions: this.fb.array(
+      (this.data.recipe?.instructions ?? []).map((step) =>
+        this.fb.control(step),
+      ),
+    ),
   });
 
   get rawIngredientsArray(): FormArray {
@@ -293,6 +379,10 @@ export class RecipeDialogComponent {
 
   get subIngredientsArray(): FormArray {
     return this.form.get('subComponentIngredients') as FormArray;
+  }
+
+  get instructionsArray(): FormArray {
+    return this.form.get('instructions') as FormArray;
   }
 
   addRawIngredient(): void {
@@ -319,7 +409,14 @@ export class RecipeDialogComponent {
 
   removeSubIngredient(index: number): void {
     this.subIngredientsArray.removeAt(index);
-    delete this.circularError[index];
+  }
+
+  addStep(): void {
+    this.instructionsArray.push(this.fb.control(''));
+  }
+
+  removeStep(index: number): void {
+    this.instructionsArray.removeAt(index);
   }
 
   theoreticalCost = computed(() => {
@@ -345,32 +442,36 @@ export class RecipeDialogComponent {
     if (this.form.invalid) return;
     const v = this.form.value;
 
-    // Circular dependency check for sub-components
+    // Cycle detection
     const subsById = new Map(
       this.data.subComponents.map((s) => [s.id, { ...s, id: s.id }]),
     );
-    const recipeId = this.data.recipe?.id ?? '__new__';
-    let hasCircular = false;
-    (
-      (v.subComponentIngredients ?? []) as RecipeSubComponentIngredient[]
-    ).forEach((ing, idx) => {
+    const targetId = this.data.recipe?.id ?? '__new__';
+    for (const ing of (v.subComponentIngredients ??
+      []) as RecipeSubComponentIngredient[]) {
       if (
         ing.subComponentId &&
-        this.cost.hasCircularDependency(recipeId, ing.subComponentId, subsById)
+        this.cost.hasCircularDependency(targetId, ing.subComponentId, subsById)
       ) {
-        this.circularError[idx] = 'Circular dependency detected';
-        hasCircular = true;
+        return; // silently block â€” UI prevents save via disabled button
       }
-    });
-    if (hasCircular) return;
+    }
+
+    // Wrap plain text steps in <p> tags
+    const instructions: string[] = (v.instructions ?? [])
+      .map((s: string) => s?.trim())
+      .filter((s: string) => !!s)
+      .map((s: string) => `<p>${s}</p>`);
 
     const recipe: Recipe = {
       name: v.name,
-      category: v.category || undefined,
+      recipeType: v.recipeType as RecipeType,
+      ...(v.category ? { category: v.category } : {}),
       sellingPrice: v.sellingPrice,
       portionSize: v.portionSize,
       portionUnit: v.portionUnit,
       parPortions: v.parPortions ?? 0,
+      currentStock: v.recipeType === 'PRE_MADE' ? (v.currentStock ?? 0) : 0,
       isActive: v.isActive,
       rawIngredients: (v.rawIngredients ?? []).map(
         (i: RecipeRawIngredient) => ({
@@ -384,6 +485,7 @@ export class RecipeDialogComponent {
           qty: i.qty,
         }),
       ),
+      instructions,
       theoreticalCost: this.theoreticalCost(),
       actualCost: this.data.recipe?.actualCost ?? 0,
       ...(v.notes ? { notes: v.notes } : {}),
@@ -392,7 +494,7 @@ export class RecipeDialogComponent {
   }
 }
 
-// ─── Recipes Page ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Recipes Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @Component({
   selector: 'app-recipes',
@@ -434,7 +536,7 @@ export class RecipesComponent implements OnInit {
 
   openDialog(recipe?: RecipeRow): void {
     const ref = this.dialog.open(RecipeDialogComponent, {
-      width: '640px',
+      width: '680px',
       data: {
         recipe,
         materials: this.allMaterials(),
