@@ -158,6 +158,63 @@ Architecture §8 Security Model, ADMN-001 implementation, `AdminCoreService` aut
 
 ---
 
+## ADL-008 — Ingredient Chain Model: DAG with Unbounded Nesting, Typed Recipe Variants, and Optional Sub-Component PAR [ACCEPTED]
+
+**Date:** April 16, 2026  
+**Author:** Watson  
+**Status:** ACCEPTED
+
+**Context:**  
+The original models defined a shallow ingredient chain: `SubComponent` could only reference `RawMaterial` (no nesting), and `Recipe` referenced both. Three design gaps were identified through product review:
+
+1. **Nesting depth** — Real kitchen prep commonly produces intermediates that themselves build on other intermediates (e.g., a "Spiced Oil" sub-component uses a "Herb Blend" sub-component). The flat model forced duplication of ingredient lists.
+
+2. **Recipe type** — The system had no distinction between batch-prepared dishes (ice cream, cookies — finished portions are stockable) and made-to-order dishes (pasta, burgers — no finished-portion inventory). Deduction triggers and stock tracking logic differ between these two types.
+
+3. **Sub-component inventory and alerts** — `SubComponent` had no `currentStock`, so kitchen batch tracking and low-stock alerting was impossible at the intermediate-prep level. `RawMaterial` already had `parMinimum` and `criticalThreshold`; sub-components had no equivalent.
+
+**Decision:**
+
+**1 — DAG traversal model for ingredient nesting.**  
+`SubComponent` is updated to schema v2 to carry both `rawIngredients[]` (was `ingredients[]`, renamed for symmetry) and a new `subComponentIngredients[]` array enabling unbounded nesting. The ingredient chain is treated as a Directed Acyclic Graph (DAG). Cycle detection is the responsibility of the traversal engine (back-calculation, cost propagation), not the data model. The engine maintains an ephemeral `visited: Set<string>` keyed as `"subComponent:{id}"` or `"rawMaterial:{id}"` per run. If a node is encountered a second time, a warning is logged and traversal of that branch is skipped — no infinite loop, no silent double-counting. This is simpler and more transparent than a stored tree structure, which would require denormalization and mutation-time consistency maintenance.
+
+**2 — `RecipeType` discriminator on `RecipeDoc`.**  
+`Recipe` is updated to schema v3 to carry `recipeType: 'PRE_MADE' | 'COOKED_TO_ORDER'`.  
+- `PRE_MADE`: ingredient deduction occurs at prep-batch initiation; `currentStock` (finished portions) is tracked and decremented at service.  
+- `COOKED_TO_ORDER`: ingredient deduction also occurs at cooking initiation (not at point of sale); no finished-portion inventory is maintained (`currentStock` stays 0).  
+Both types share the same deduction trigger point — preparation initiation — intentionally. This prevents the system from waiting until an order is fulfilled before debiting stock, which would break real-time inventory accuracy in a busy kitchen.
+
+**3 — Optional sub-component PAR and alert fields.**  
+`SubComponent` gains `currentStock`, `parMinimum?`, and `criticalThreshold?`.  
+`parMinimum` and `criticalThreshold` are optional and default to `0`. When `0`, no alert is evaluated — `serialize()` omits them from Firestore to avoid writing meaningless zeros for operators who do not track batch-level PAR. Operators who want reorder alerts on sauce batches, dough, or other intermediates configure these values via the master data UI.
+
+**4 — Instructions as ordered HTML string arrays.**  
+Both `SubComponent` and `Recipe` gain `instructions: string[]`. Each element is an HTML string rendered via `[innerHTML]` in the Angular template, supporting bold, numbered lists, and basic formatting without introducing a separate rich-text storage format. Sanitization is applied at render time per Angular's built-in DomSanitizer.
+
+**Trade-offs:**
+
+| Concern | Decision | Alternative Considered |
+|---|---|---|
+| Cycle detection | Ephemeral visited Set in traversal engine | Stored DAG tree (too much write-time complexity) |
+| Recipe inventory | `currentStock` on `Recipe` only for PRE_MADE; 0 for COOKED_TO_ORDER | Separate `PrepBatch` collection (over-engineering for v1) |
+| Sub-component PAR | Optional fields, omitted at 0 | Mandatory with 0 as "off" (would litter Firestore with zeros) |
+| Instructions format | HTML string array | Markdown, ProseMirror delta, or plain string (HTML is simplest for render without a parser) |
+
+**Breaking changes:**
+
+- `SubComponent` schema v1 `ingredients[]` → v2 `rawIngredients[]`. `deserializeSubComponent()` contains the migration gate: if `_schemaVersion < 2`, read from `ingredients` field and map to `rawIngredients`.
+- `Recipe` schema v2 → v3. `deserializeRecipe()` fills `recipeType = 'COOKED_TO_ORDER'`, `instructions = []`, `currentStock = 0` for all existing records. No data loss.
+
+**Impact:**  
+- `projects/shared/src/models/sub-component.model.ts` — bumped to `SUB_COMPONENT_SCHEMA_VERSION = 2`  
+- `projects/shared/src/models/recipe.model.ts` — bumped to `RECIPE_SCHEMA_VERSION = 3`  
+- Back-calculation engine (MSTR-008 Cloud Function) must be updated to traverse `subComponentIngredients[]` recursively with cycle guard  
+- KTCH deduction handler must branch on `recipeType` to decide whether to debit `Recipe.currentStock` or pass through to raw materials  
+- ALRT engine must include `SubComponent` documents in its low-stock scan alongside `RawMaterial`  
+- MSTR module UI components for sub-component and recipe editing require updated forms  
+
+---
+
 ## ADL-008 — Vendor Portal Auth: Email Magic Link Invite + Optional Password Link [ACCEPTED]
 
 **Date:** April 15, 2026  

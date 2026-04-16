@@ -17,10 +17,23 @@
                 {{ row.yieldQty }} {{ row.yieldUnit }} @ {{ (row.yieldPercent * 100) | number:'1.0-0' }}%
             </mat-cell>
         </ng-container>
+        <ng-container matColumnDef="stock">
+            <mat-header-cell *matHeaderCellDef>On Hand</mat-header-cell>
+            <mat-cell *matCellDef="let row">
+                <span [attr.data-test-id]="'mstr-subcomp-stock-' + row.id">
+                    {{ row.currentStock | number:'1.2-2' }} {{ row.yieldUnit }}
+                </span>
+                @if (row.parMinimum > 0 && row.currentStock < row.parMinimum) { <mat-icon
+                    class="text-amber-600 text-sm ml-1" matTooltip="Below PAR">warning</mat-icon>
+                    }
+            </mat-cell>
+        </ng-container>
         <ng-container matColumnDef="cost">
             <mat-header-cell *matHeaderCellDef>Cost / Unit</mat-header-cell>
             <mat-cell *matCellDef="let row">
-                {{ row.calculatedCostPerUnit | number:'1.2-2' }} PHP
+                <span [attr.data-test-id]="'mstr-subcomp-cost-' + row.id">
+                    {{ row.calculatedCostPerUnit | number:'1.2-2' }} PHP
+                </span>
             </mat-cell>
         </ng-container>
         <ng-container matColumnDef="actions">

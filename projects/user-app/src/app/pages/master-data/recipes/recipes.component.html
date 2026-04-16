@@ -10,7 +10,15 @@
         @for (recipe of allRecipes(); track recipe.id) {
         <mat-card [attr.data-test-id]="'mstr-recipe-card-' + recipe.id">
             <mat-card-header>
-                <mat-card-title>{{ recipe.name }}</mat-card-title>
+                <mat-card-title class="flex items-center gap-2">
+                    {{ recipe.name }}
+                    @if (recipe.recipeType === 'PRE_MADE') {
+                    <span class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-700"
+                        [attr.data-test-id]="'mstr-recipe-premade-badge-' + recipe.id">
+                        PRE-MADE
+                    </span>
+                    }
+                </mat-card-title>
                 @if (recipe.category) {
                 <mat-card-subtitle>{{ recipe.category }}</mat-card-subtitle>
                 }
@@ -32,6 +40,14 @@
                         <span class="text-red-600 font-medium">{{ foodCostPercent(recipe) | number:'1.1-1' }}%</span>
                         }
                 </div>
+                @if (recipe.recipeType === 'PRE_MADE') {
+                <div class="flex justify-between text-sm mt-1">
+                    <span class="text-gray-500">On Hand</span>
+                    <span class="font-medium" [attr.data-test-id]="'mstr-recipe-stock-' + recipe.id">
+                        {{ recipe.currentStock | number:'1.0-0' }} portions
+                    </span>
+                </div>
+                }
                 @if (!recipe.isActive) {
                 <mat-chip class="mt-2" color="warn">Inactive</mat-chip>
                 }
